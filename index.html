@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Exam Prep — Interactive Practice</title>
+<style>
+:root {
+  --blue: #0078d4; --blue-dark: #005a9e; --border: #e1dfdd;
+  --text: #201f1e; --text-light: #605e5c; --card-bg: #ffffff; --page-bg: #faf9f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --border:#3b3a39; --text:#f3f2f1; --text-light:#c8c6c4; --card-bg:#252423; --page-bg:#1b1a19; }
+}
+* { box-sizing: border-box; }
+body { font-family:'Segoe UI', -apple-system, Roboto, Helvetica, Arial, sans-serif; margin:0; background:var(--page-bg); color:var(--text); }
+header { background:linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; padding:28px 24px; }
+header h1 { margin:0 0 6px; font-size:1.5em; }
+header p { margin:0; opacity:0.92; font-size:0.95em; line-height:1.4; }
+.wrap { max-width:760px; margin:0 auto; padding:24px 16px 60px; }
+.intro { color:var(--text-light); font-size:0.92em; line-height:1.5; margin:0 0 20px; }
+.grid { display:grid; gap:14px; }
+a.card {
+  display:block; text-decoration:none; color:inherit;
+  background:var(--card-bg); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; transition:border-color .12s, transform .12s, box-shadow .12s;
+}
+a.card:hover, a.card:focus { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,120,212,0.15); outline:none; }
+.code { display:inline-block; font-size:0.72em; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  background:#eff6fc; color:var(--blue-dark); padding:4px 10px; border-radius:12px; margin-bottom:10px; }
+@media (prefers-color-scheme: dark) { .code { background:#0b3a5c; color:#9ecbf0; } }
+.title { font-size:1.12em; font-weight:600; line-height:1.35; margin:0 0 4px; }
+.go { font-size:0.85em; color:var(--blue); font-weight:600; margin-top:8px; }
+.go::after { content:" →"; }
+footer { text-align:center; color:var(--text-light); font-size:0.8em; padding:10px 16px 0; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Azure Exam Prep</h1>
+  <p>Interactive practice questions, diagram references, and a domain-mastery challenge. Tap an exam to begin.</p>
+</header>
+<div class="wrap">
+  <p class="intro">Your answers are saved automatically in your browser per exam. On your phone, tap the Share icon in Safari and choose <b>Add to Home Screen</b> to keep this menu one tap away.</p>
+  <div class="grid">
+
+    <a class="card" href="AI-103_interactive.html">
+      <span class="code">AI-103</span>
+      <div class="title">Developing AI Apps and Agents on Azure</div>
+      <div class="go">Start practice</div>
+    </a>
+
+    <a class="card" href="AI-300_interactive.html">
+      <span class="code">AI-300</span>
+      <div class="title">Operationalizing Machine Learning and Generative AI Solutions</div>
+      <div class="go">Start practice</div>
+    </a>
+
+    <a class="card" href="AZ-104_interactive.html">
+      <span class="code">AZ-104</span>
+      <div class="title">Microsoft Azure Administrator</div>
+      <div class="go">Start practice</div>
+    </a>
+
+    <a class="card" href="AZ-305_interactive.html">
+      <span class="code">AZ-305</span>
+      <div class="title">Designing Microsoft Azure Infrastructure Solutions</div>
+      <div class="go">Start practice</div>
+    </a>
+
+  </div>
+  <footer>Not affiliated with or endorsed by Microsoft.</footer>
+</div>
+</body>
+</html>

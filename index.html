@@ -8,68 +8,94 @@
 :root {
   --blue: #0078d4; --blue-dark: #005a9e; --border: #e1dfdd;
   --text: #201f1e; --text-light: #605e5c; --card-bg: #ffffff; --page-bg: #faf9f8;
+  --chip-bg: #eff6fc; --chip-fg: #005a9e; --beta-bg:#fff4ce; --beta-fg:#8a5300;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --border:#3b3a39; --text:#f3f2f1; --text-light:#c8c6c4; --card-bg:#252423; --page-bg:#1b1a19; }
+  :root { --border:#3b3a39; --text:#f3f2f1; --text-light:#c8c6c4; --card-bg:#252423; --page-bg:#1b1a19;
+          --chip-bg:#0b3a5c; --chip-fg:#9ecbf0; --beta-bg:#4a3a10; --beta-fg:#ffd98a; }
 }
 * { box-sizing: border-box; }
-body { font-family:'Segoe UI', -apple-system, Roboto, Helvetica, Arial, sans-serif; margin:0; background:var(--page-bg); color:var(--text); }
-header { background:linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; padding:28px 24px; }
-header h1 { margin:0 0 6px; font-size:1.5em; }
-header p { margin:0; opacity:0.92; font-size:0.95em; line-height:1.4; }
-.wrap { max-width:760px; margin:0 auto; padding:24px 16px 60px; }
-.intro { color:var(--text-light); font-size:0.92em; line-height:1.5; margin:0 0 20px; }
+html { -webkit-text-size-adjust:100%; }
+body { font-family:'Segoe UI', -apple-system, Roboto, Helvetica, Arial, sans-serif; margin:0;
+  background:var(--page-bg); color:var(--text); }
+header { background:linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; padding:26px 20px; }
+header h1 { margin:0 0 6px; font-size:1.45em; }
+header p { margin:0; opacity:0.93; font-size:0.93em; line-height:1.45; }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 56px; }
+.intro { color:var(--text-light); font-size:0.9em; line-height:1.55; margin:0 0 20px; }
 .grid { display:grid; gap:14px; }
-a.card {
-  display:block; text-decoration:none; color:inherit;
-  background:var(--card-bg); border:1px solid var(--border); border-radius:12px;
-  padding:18px 20px; transition:border-color .12s, transform .12s, box-shadow .12s;
+a.card { display:block; text-decoration:none; color:inherit; background:var(--card-bg);
+  border:1px solid var(--border); border-radius:12px; padding:18px 20px;
+  transition:border-color .12s, transform .12s, box-shadow .12s; }
+a.card:hover, a.card:focus { border-color:var(--blue); transform:translateY(-2px);
+  box-shadow:0 4px 14px rgba(0,120,212,0.15); outline:none; }
+.chiprow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.code { font-size:0.72em; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  background:var(--chip-bg); color:var(--chip-fg); padding:4px 10px; border-radius:12px; }
+.beta { font-size:0.66em; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  background:var(--beta-bg); color:var(--beta-fg); padding:4px 9px; border-radius:12px; }
+.title { font-size:1.1em; font-weight:600; line-height:1.35; margin:0 0 6px; }
+.meta { font-size:0.83em; color:var(--text-light); }
+.go { font-size:0.85em; color:var(--blue); font-weight:600; margin-top:9px; }
+.go::after { content:" \2192"; }
+.note { margin-top:24px; border:1px solid var(--border); background:var(--card-bg);
+  border-radius:12px; padding:16px 18px; font-size:0.85em; color:var(--text-light); line-height:1.6; }
+.note b { color:var(--text); }
+footer { text-align:center; color:var(--text-light); font-size:0.78em; padding:18px 16px 0; line-height:1.6; }
+@media (max-width:560px) {
+  header { padding:20px 16px; }
+  header h1 { font-size:1.2em; }
+  a.card { padding:16px 15px; }
 }
-a.card:hover, a.card:focus { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,120,212,0.15); outline:none; }
-.code { display:inline-block; font-size:0.72em; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
-  background:#eff6fc; color:var(--blue-dark); padding:4px 10px; border-radius:12px; margin-bottom:10px; }
-@media (prefers-color-scheme: dark) { .code { background:#0b3a5c; color:#9ecbf0; } }
-.title { font-size:1.12em; font-weight:600; line-height:1.35; margin:0 0 4px; }
-.go { font-size:0.85em; color:var(--blue); font-weight:600; margin-top:8px; }
-.go::after { content:" →"; }
-footer { text-align:center; color:var(--text-light); font-size:0.8em; padding:10px 16px 0; line-height:1.5; }
 </style>
 </head>
 <body>
 <header>
   <h1>Azure Exam Prep</h1>
-  <p>Interactive practice questions, diagram references, and a domain-mastery challenge. Tap an exam to begin.</p>
+  <p>Practice questions, diagram references, and a timed domain-mastery challenge. Tap an exam to begin.</p>
 </header>
 <div class="wrap">
-  <p class="intro">Your answers are saved automatically in your browser per exam. On your phone, tap the Share icon in Safari and choose <b>Add to Home Screen</b> to keep this menu one tap away.</p>
+  <p class="intro">604 questions across four exams. Every question uses plausible same-family distractors, so nothing can be eliminated by category, and every answer is explained in full &mdash; including why each wrong option fails. Includes multi-select, case studies, Yes/No repeated sets, sequencing, and select-the-answer formats. Progress saves automatically per exam. On iPhone, tap Share &rarr; <b>Add to Home Screen</b> to keep this menu one tap away.</p>
   <div class="grid">
 
-    <a class="card" href="AI-103_interactive.html">
-      <span class="code">AI-103</span>
-      <div class="title">Developing AI Apps and Agents on Azure</div>
-      <div class="go">Start practice</div>
-    </a>
-
-    <a class="card" href="AI-300_interactive.html">
-      <span class="code">AI-300</span>
-      <div class="title">Operationalizing Machine Learning and Generative AI Solutions</div>
-      <div class="go">Start practice</div>
-    </a>
-
     <a class="card" href="AZ-104_interactive.html">
-      <span class="code">AZ-104</span>
+      <div class="chiprow"><span class="code">AZ-104</span></div>
       <div class="title">Microsoft Azure Administrator</div>
+      <div class="meta">164 questions &middot; 5 domains &middot; 7 diagrams</div>
       <div class="go">Start practice</div>
     </a>
 
     <a class="card" href="AZ-305_interactive.html">
-      <span class="code">AZ-305</span>
+      <div class="chiprow"><span class="code">AZ-305</span></div>
       <div class="title">Designing Microsoft Azure Infrastructure Solutions</div>
+      <div class="meta">153 questions &middot; 4 domains</div>
+      <div class="go">Start practice</div>
+    </a>
+
+    <a class="card" href="AI-103_interactive.html">
+      <div class="chiprow"><span class="code">AI-103</span><span class="beta">Beta exam</span></div>
+      <div class="title">Developing AI Apps and Agents on Azure</div>
+      <div class="meta">141 questions &middot; 5 domains &middot; 2 diagrams</div>
+      <div class="go">Start practice</div>
+    </a>
+
+    <a class="card" href="AI-300_interactive.html">
+      <div class="chiprow"><span class="code">AI-300</span><span class="beta">Beta exam</span></div>
+      <div class="title">Operationalizing Machine Learning and Generative AI Solutions</div>
+      <div class="meta">146 questions &middot; 5 domains &middot; 3 diagrams</div>
       <div class="go">Start practice</div>
     </a>
 
   </div>
-  <footer>Not affiliated with or endorsed by Microsoft.</footer>
+
+  <div class="note">
+    <b>Before you book.</b> AI-103 and AI-300 are newer exams still in or near beta, so Microsoft revises their
+    objectives more often than the established AZ exams. Check the official study guide on Microsoft Learn for the
+    current &ldquo;Skills measured as of&rdquo; date before your exam, and pair this app with hands-on time in the
+    Azure portal plus Microsoft&rsquo;s own free practice assessment.
+  </div>
+
+  <footer>Not affiliated with or endorsed by Microsoft. Independent study material.</footer>
 </div>
 </body>
 </html>

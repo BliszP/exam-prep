@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-300: Operationalizing Machine Learning and Generative AI Solutions — Interactive Practice</title>
+<style>
+:root {
+  --blue: #0078d4; --blue-dark: #005a9e; --green: #107c10; --green-bg: #dff6dd;
+  --red: #d13438; --red-bg: #fde7e9; --amber: #b25000; --amber-bg: #fff4ce;
+  --gray-bg: #f3f2f1; --border: #e1dfdd; --text: #201f1e; --text-light: #605e5c;
+}
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', -apple-system, Roboto, Helvetica, Arial, sans-serif; margin:0; background:#faf9f8; color:var(--text); }
+header { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; padding:20px 24px; }
+header h1 { margin:0 0 4px; font-size:1.4em; }
+header p { margin:0; opacity:0.9; font-size:0.9em; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+.statbar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.stat { background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px 16px; flex:1; min-width:120px; text-align:center; }
+.stat .num { font-size:1.5em; font-weight:600; color:var(--blue); }
+.stat .lbl { font-size:0.78em; color:var(--text-light); text-transform:uppercase; letter-spacing:0.03em; }
+.controls { background:#fff; border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.controls label { font-size:0.85em; color:var(--text-light); margin-right:4px; }
+.controls select, .controls button { font-family:inherit; font-size:0.88em; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+.controls button.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+.controls button.primary:hover { background:var(--blue-dark); }
+.controls button:hover { background:var(--gray-bg); }
+.controls .toggle { display:flex; align-items:center; gap:6px; }
+#card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:24px; }
+.badges { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.badge { font-size:0.72em; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; }
+.badge.domain { background:#eff6fc; color:var(--blue-dark); }
+.badge.format { background:var(--gray-bg); color:var(--text-light); }
+.bg-box { background:var(--gray-bg); border-left:3px solid var(--blue); padding:12px 14px; border-radius:6px; margin-bottom:16px; font-size:0.92em; line-height:1.5; }
+.bg-box b { color: var(--blue-dark); }
+#qtext { font-size:1.08em; font-weight:600; line-height:1.5; margin-bottom:18px; }
+.opt { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1.5px solid var(--border); border-radius:8px; margin-bottom:10px; cursor:pointer; transition: all .12s; }
+.opt:hover:not(.locked) { border-color:var(--blue); background:#f5faff; }
+.opt .letter { font-weight:700; min-width:20px; }
+.opt.selected { border-color:var(--blue); background:#eff6fc; }
+.opt.correct { border-color:var(--green); background:var(--green-bg); }
+.opt.incorrect { border-color:var(--red); background:var(--red-bg); }
+.opt.missed { border-color:var(--amber); background:var(--amber-bg); }
+.opt input[type=checkbox] { margin-top:3px; }
+#feedback { margin-top:6px; padding:14px 16px; border-radius:8px; font-size:0.92em; line-height:1.55; display:none; }
+#feedback.show { display:block; }
+#feedback.correct-fb { background:var(--green-bg); border:1px solid var(--green); }
+#feedback.incorrect-fb { background:var(--red-bg); border:1px solid var(--red); }
+#feedback .fb-title { font-weight:700; margin-bottom:6px; }
+#feedback .fb-title.ok { color:var(--green); }
+#feedback .fb-title.bad { color:var(--red); }
+.actions { display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+.actions button { font-family:inherit; font-size:0.95em; padding:9px 20px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+.actions button.primary { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:600; }
+.actions button.primary:hover { background:var(--blue-dark); }
+.actions button:disabled { opacity:0.4; cursor:not-allowed; }
+#summary { display:none; text-align:center; padding:30px 20px; }
+#summary.show { display:block; }
+#summary h2 { color:var(--blue-dark); }
+.progressbar { height:6px; background:var(--gray-bg); border-radius:3px; overflow:hidden; margin-bottom:16px; }
+.progressbar > div { height:100%; background:var(--blue); transition:width .2s; }
+.domainrow { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9em; }
+.hint { font-size:0.8em; color:var(--text-light); margin-top:2px; }
+footer { text-align:center; padding:20px; color:var(--text-light); font-size:0.8em; }
+.tabnav { display:flex; gap:6px; padding:0 12px; background:var(--blue-dark); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+.tabnav button { font-family:inherit; font-size:0.85em; padding:10px 14px; border:none; background:transparent; color:#cfe6f7; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; flex:0 0 auto; touch-action:manipulation; }
+.tabnav button.active { color:#fff; border-bottom-color:#fff; font-weight:600; }
+.tabnav button:hover { color:#fff; }
+#jsErrorBanner { display:none; background:#fde7e9; border:2px solid var(--red); color:#5c0009; padding:12px 16px; margin:14px 16px 0; border-radius:8px; font-size:0.82em; font-family:monospace; white-space:pre-wrap; word-break:break-word; }
+@media (max-width: 480px) {
+  .tabnav button { font-size:0.78em; padding:9px 11px; }
+  header h1 { font-size:1.15em; }
+  header p { font-size:0.82em; }
+  .wrap { padding:14px 10px 50px; }
+}
+#diagramView { display:none; }
+.diagram-card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+.diagram-card h3 { margin:0 0 4px; font-size:1.05em; color:var(--blue-dark); }
+.diagram-card .cap { font-size:0.88em; color:var(--text-light); margin-bottom:14px; line-height:1.5; }
+.diagram-card .svgwrap { overflow-x:auto; }
+.diagram-intro { font-size:0.88em; color:var(--text-light); margin-bottom:16px; line-height:1.5; }
+#gameView { display:none; }
+.game-intro { font-size:0.88em; color:var(--text-light); margin-bottom:16px; line-height:1.5; }
+.game-statbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.game-stat { background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px 14px; text-align:center; min-width:90px; }
+.game-stat .num { font-size:1.3em; font-weight:700; color:var(--blue); }
+.game-stat .lbl { font-size:0.7em; color:var(--text-light); text-transform:uppercase; letter-spacing:0.03em; }
+.lives { font-size:1.2em; letter-spacing:2px; }
+.lives .lost { opacity:0.25; }
+.timerbar { height:8px; background:var(--gray-bg); border-radius:4px; overflow:hidden; margin-bottom:16px; }
+.timerbar > div { height:100%; background:var(--green); transition:width 1s linear, background .3s; }
+.timerbar.low > div { background:var(--red); }
+#gameStart, #gameOver { text-align:center; padding:30px 16px; }
+#gameStart h2, #gameOver h2 { color:var(--blue-dark); }
+.mastery-list { text-align:left; max-width:520px; margin:0 auto; }
+.mastery-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:0.88em; }
+.mastery-row .dname { flex:1; }
+.mastery-bar { width:120px; height:8px; background:var(--gray-bg); border-radius:4px; overflow:hidden; }
+.mastery-bar > div { height:100%; }
+.mastery-pct { width:80px; text-align:right; font-weight:600; }
+.mastery-badge { font-size:0.68em; padding:2px 7px; border-radius:8px; font-weight:700; }
+.mastery-badge.mastered { background:var(--green-bg); color:var(--green); }
+.mastery-badge.learning { background:var(--amber-bg); color:var(--amber); }
+.mastery-badge.new { background:var(--gray-bg); color:var(--text-light); }
+#gameCard { background:#fff; border:1px solid var(--border); border-radius:10px; padding:24px; }
+.streakflash { font-weight:700; color:var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI-300: Operationalizing Machine Learning and Generative AI Solutions</h1>
+  <p>Interactive Practice — click an answer for instant feedback and full reasoning, right or wrong.</p>
+</header>
+<div class="tabnav">
+  <button id="tabQuizBtn" class="active">Practice Questions</button>
+  <button id="tabDiagramBtn">Diagram Reference (3)</button>
+  <button id="tabGameBtn">Domain Mastery Challenge</button>
+</div>
+<div id="jsErrorBanner"></div>
+<div class="wrap">
+  <div id="storageWarning" style="display:none;background:var(--amber-bg);border:1px solid var(--amber);color:#5c3a00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.85em;">Your browser is blocking saved progress on this file (common when a file is opened via a share/email link rather than saved and opened directly). The quiz still works fully — your answers just won't be remembered if you close and reopen the page.</div>
+  <div id="quizView">
+  <div class="statbar">
+    <div class="stat"><div class="num" id="stAnswered">0</div><div class="lbl">Answered</div></div>
+    <div class="stat"><div class="num" id="stCorrect">0</div><div class="lbl">Correct</div></div>
+    <div class="stat"><div class="num" id="stAccuracy">—</div><div class="lbl">Accuracy</div></div>
+    <div class="stat"><div class="num" id="stRemaining">0</div><div class="lbl">Remaining</div></div>
+  </div>
+  <div class="progressbar"><div id="progressFill" style="width:0%"></div></div>
+  <div class="controls">
+    <div><label for="domainFilter">Domain</label><br><select id="domainFilter"></select></div>
+    <div><label for="formatFilter">Format</label><br><select id="formatFilter">
+      <option value="all">All formats</option>
+      <option value="single">Single-answer</option>
+      <option value="multi">Multi-select</option>
+      <option value="case">Case study</option>
+    </select></div>
+    <div class="toggle"><input type="checkbox" id="shuffleToggle"><label for="shuffleToggle">Shuffle order</label></div>
+    <div class="toggle"><input type="checkbox" id="reviewToggle"><label for="reviewToggle">Review missed only</label></div>
+    <button id="resetBtn">Reset progress</button>
+  </div>
+
+  <div id="card">
+    <div class="badges">
+      <span class="badge domain" id="bDomain"></span>
+      <span class="badge format" id="bFormat"></span>
+    </div>
+    <div class="bg-box" id="bgBox" style="display:none"></div>
+    <div id="qtext"></div>
+    <div id="options"></div>
+    <div class="hint" id="multiHint" style="display:none"></div>
+    <div id="feedback"></div>
+    <div class="actions">
+      <button id="prevBtn">&larr; Previous</button>
+      <div>
+        <button id="checkBtn" class="primary" style="display:none">Check Answer</button>
+        <button id="nextBtn" class="primary" style="display:none">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary">
+    <h2>Session Complete</h2>
+    <p id="summaryLine"></p>
+    <div id="domainBreakdown"></div>
+    <button class="primary" id="restartBtn" style="margin-top:16px;padding:10px 22px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;">Review all questions again</button>
+  </div>
+
+  </div>
+
+  <div id="diagramView">
+    <p class="diagram-intro">Reference diagrams for the architectural and conceptual patterns behind this exam's scenario questions. Each has been checked against current official Microsoft Learn documentation — source noted under each diagram.</p>
+    <div id="diagramGallery"></div>
+  </div>
+
+  <div id="gameView">
+    <p class="game-intro">Timed speed-round drill pulled from the same question bank as Practice Questions. Wrong answers cost a life; correct answers build a streak. Your accuracy per domain is tracked across every session you play, and domains you're weaker in show up more often until you prove you've got them.</p>
+
+    <div id="gameStart">
+      <h2>Domain Mastery Challenge</h2>
+      <p style="color:var(--text-light);max-width:480px;margin:8px auto 20px;">3 lives. ~30 seconds per question. Score builds with your streak. The round ends when you run out of lives or clear the question pool.</p>
+      <div id="masteryPreview" class="mastery-list"></div>
+      <button class="primary" id="startGameBtn" style="margin-top:20px;padding:12px 28px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;font-size:1em;">Start Round</button>
+    </div>
+
+    <div id="gamePlay" style="display:none;">
+      <div class="game-statbar">
+        <div class="game-stat"><div class="num"><span id="gLives" class="lives"></span></div><div class="lbl">Lives</div></div>
+        <div class="game-stat"><div class="num" id="gScore">0</div><div class="lbl">Score</div></div>
+        <div class="game-stat"><div class="num" id="gStreak">0</div><div class="lbl">Streak</div></div>
+        <div class="game-stat"><div class="num" id="gSeen">0</div><div class="lbl">Seen</div></div>
+      </div>
+      <div class="timerbar" id="gTimerBar"><div id="gTimerFill" style="width:100%"></div></div>
+      <div id="gameCard">
+        <div class="badges">
+          <span class="badge domain" id="gDomain"></span>
+          <span class="badge format" id="gFormat"></span>
+        </div>
+        <div id="gQtext" style="font-size:1.08em;font-weight:600;line-height:1.5;margin-bottom:18px;"></div>
+        <div id="gOptions"></div>
+        <div class="hint" id="gMultiHint" style="display:none"></div>
+        <div id="gFeedback" style="margin-top:6px;padding:14px 16px;border-radius:8px;font-size:0.92em;line-height:1.55;display:none;"></div>
+        <div class="actions">
+          <div></div>
+          <div>
+            <button id="gCheckBtn" class="primary" style="display:none">Check Answer</button>
+            <button id="gContinueBtn" class="primary" style="display:none">Continue &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameOver">
+      <h2 id="gOverTitle">Round Complete</h2>
+      <p id="gOverLine" style="color:var(--text-light);"></p>
+      <div id="gOverMastery" class="mastery-list"></div>
+      <button class="primary" id="playAgainBtn" style="margin-top:16px;padding:10px 22px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;">Play Again</button>
+      <button id="resetMasteryBtn" style="margin-top:16px;margin-left:8px;padding:10px 22px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;">Reset mastery data</button>
+    </div>
+  </div>
+
+  <footer>Progress is saved locally in this browser. Not affiliated with or endorsed by Microsoft.</footer>
+</div>
+
+<script>
+const EXAM_CODE = "AI-300";
+const QUESTIONS = [{"id": "Q1", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You need to give a data science team access to shared training data without duplicating files into every workspace. What should you create?", "options": [{"label": "A", "text": "A datastore that references the underlying storage"}, {"label": "B", "text": "A new resource group per user"}, {"label": "C", "text": "A local copy on each engineer's laptop"}, {"label": "D", "text": "A Traffic Manager profile"}], "correct": ["A"], "explanation": "Datastores let a workspace reference existing storage without duplicating data \u2014 explicitly \"create and manage datastores.\" B, C, and D create duplication or are unrelated to data access."}, {"id": "Q2", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Your team needs a compute target that automatically scales down to zero nodes when idle to control cost for training jobs. What should you configure?", "options": [{"label": "A", "text": "A fixed-size, always-on virtual machine"}, {"label": "B", "text": "A compute cluster with autoscaling (min nodes = 0)"}, {"label": "C", "text": "A Traffic Manager endpoint"}, {"label": "D", "text": "A static App Service plan"}], "correct": ["B"], "explanation": "Autoscaling clusters that scale to zero minimize idle cost while still supporting training bursts \u2014 \"create and manage compute targets.\" A fixed always-on VM (A) wastes cost when idle; C and D aren't ML compute targets."}, {"id": "Q3", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You need to control which users can create or delete resources within a Machine Learning workspace, following least privilege. What should you configure?", "options": [{"label": "A", "text": "Identity and access management (RBAC) for the workspace"}, {"label": "B", "text": "A shared admin account for all users"}, {"label": "C", "text": "No authentication, since it's an internal tool"}, {"label": "D", "text": "A single global API key"}], "correct": ["A"], "explanation": "Least-privilege access control is explicitly \"configure identity and access management for workspaces.\" B, C, and D violate least privilege and security best practice."}, {"id": "Q4", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Multiple workspaces across teams need to reuse the same curated environments and components without recreating them. What should you use?", "options": [{"label": "A", "text": "A registry to share assets across workspaces"}, {"label": "B", "text": "A separate storage account per team with manual copying"}, {"label": "C", "text": "Hardcoding the environment in each script"}, {"label": "D", "text": "A DNS alias"}], "correct": ["A"], "explanation": "Registries exist specifically to \"share assets across workspaces,\" avoiding duplication. B, C, and D are manual, error-prone workarounds."}, {"id": "Q5", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You need to ensure that only specific virtual networks can reach your Machine Learning workspace, with no public endpoint exposure. What should you configure?", "options": [{"label": "A", "text": "Restrict network access to the workspace (private endpoints/VNet)"}, {"label": "B", "text": "A public endpoint with no restrictions"}, {"label": "C", "text": "A CDN in front of the workspace"}, {"label": "D", "text": "A wildcard DNS record"}], "correct": ["A"], "explanation": "This matches \"restrict network access to Machine Learning workspaces\" directly. B, C, and D increase or don't address public exposure."}, {"id": "Q6", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You want changes to a Machine Learning workspace's infrastructure to be version-controlled, repeatable, and reviewable before being applied. What should you use?", "options": [{"label": "A", "text": "Manual configuration through the Azure portal only"}, {"label": "B", "text": "Infrastructure as code with Bicep and Azure CLI"}, {"label": "C", "text": "A spreadsheet tracking manual changes"}, {"label": "D", "text": "Ad hoc PowerShell run once with no repository"}], "correct": ["B"], "explanation": "Version-controlled, repeatable infrastructure changes are the definition of IaC, explicitly listed: \"Deploy Machine Learning workspaces and resources by using Bicep and Azure CLI.\" A, C, and D are manual and not repeatable/reviewable."}, {"id": "Q7", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You need a GitHub Actions workflow to securely authenticate to Azure without storing long-lived secrets in the repository. What should you configure?", "options": [{"label": "A", "text": "GitHub integration with Machine Learning using federated/secure credentials (OIDC)"}, {"label": "B", "text": "A hardcoded service principal password in the workflow YAML"}, {"label": "C", "text": "Personal login credentials shared among the team"}, {"label": "D", "text": "No authentication required for GitHub Actions"}], "correct": ["A"], "explanation": "Secure, secret-free authentication from GitHub Actions is explicitly \"configure GitHub integration with Machine Learning to enable secure access.\" B and C are secret/credential anti-patterns; D is insecure."}, {"id": "Q8", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You want provisioning of workspaces and compute to happen automatically whenever code is merged to the main branch. What should you implement?", "options": [{"label": "A", "text": "GitHub Actions workflows that automate resource provisioning"}, {"label": "B", "text": "A manual ticket submitted to an infrastructure team"}, {"label": "C", "text": "A quarterly manual audit"}, {"label": "D", "text": "A single one-time deployment script never rerun"}], "correct": ["A"], "explanation": "This is explicitly \"automate resource provisioning by using GitHub Actions workflows,\" triggered on events like a merge. B, C, and D aren't automated or repeatable."}, {"id": "Q9", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Your team needs to track all changes to training scripts and pipeline definitions over time, with the ability to roll back. What should you use?", "options": [{"label": "A", "text": "Git-based source control for machine learning projects"}, {"label": "B", "text": "No version tracking, since notebooks are self-documenting"}, {"label": "C", "text": "Emailing scripts between team members"}, {"label": "D", "text": "Storing scripts only on a single engineer's local disk"}], "correct": ["A"], "explanation": "Tracking and rolling back changes to code/pipelines is explicitly \"manage source control for machine learning projects by using Git.\" B, C, and D provide no version history or rollback capability."}, {"id": "Q10", "part": 1, "format": "single", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "You need to create a reusable dataset reference that captures schema and versioning for training jobs. What should you create?", "options": [{"label": "A", "text": "A data asset in the Machine Learning workspace"}, {"label": "B", "text": "A one-off local CSV with no registration"}, {"label": "C", "text": "A Traffic Manager routing rule"}, {"label": "D", "text": "A network security group rule"}], "correct": ["A"], "explanation": "A registered, versioned, schema-aware dataset reference is explicitly \"create and manage data assets.\" B, C, and D don't provide registration or versioning."}, {"id": "Q11", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to capture parameters, metrics, and artifacts for every training run so you can compare experiments later. What should you configure?", "options": [{"label": "A", "text": "Experiment tracking with MLflow"}, {"label": "B", "text": "A static text log with no structure"}, {"label": "C", "text": "A single spreadsheet updated manually"}, {"label": "D", "text": "Disabling logging to save storage"}], "correct": ["A"], "explanation": "Capturing parameters, metrics, and artifacts per run is explicitly \"configure experiment tracking with MLflow.\" B, C, and D lose structured comparability."}, {"id": "Q12", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You want the platform to automatically try multiple algorithms and hyperparameter combinations to find a strong baseline model with minimal manual effort. What should you use?", "options": [{"label": "A", "text": "Automated machine learning (AutoML)"}, {"label": "B", "text": "A single manually coded model with fixed parameters"}, {"label": "C", "text": "A rules-based lookup table"}, {"label": "D", "text": "A static pretrained model with no tuning"}], "correct": ["A"], "explanation": "Automatically exploring algorithms/hyperparameters with minimal manual effort is explicitly \"use automated machine learning to explore optimal models.\" B, C, and D require manual effort or skip optimization."}, {"id": "Q13", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to explore data interactively and prototype a model before building a formal pipeline. What should you use?", "options": [{"label": "A", "text": "Notebooks for experimentation and exploration"}, {"label": "B", "text": "A production batch endpoint"}, {"label": "C", "text": "A load-balancer health probe"}, {"label": "D", "text": "A DNS zone"}], "correct": ["A"], "explanation": "This is the exact stated purpose of notebooks in the skills outline. B, C, and D are production or unrelated infrastructure, not exploration tools."}, {"id": "Q14", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Manually searching hyperparameter combinations is too slow. What should you automate?", "options": [{"label": "A", "text": "Hyperparameter tuning (sweep jobs)"}, {"label": "B", "text": "Network routing"}, {"label": "C", "text": "Billing alerts"}, {"label": "D", "text": "Identity federation"}], "correct": ["A"], "explanation": "Automating hyperparameter search is explicitly \"automate hyperparameter tuning.\" B, C, and D are unrelated to model configuration search."}, {"id": "Q15", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Your model needs distributed training across multiple GPU nodes because the dataset and model are too large for a single node. What should you configure?", "options": [{"label": "A", "text": "Distributed training for large/deep learning models"}, {"label": "B", "text": "A single CPU-only compute instance"}, {"label": "C", "text": "A serverless Logic App"}, {"label": "D", "text": "A Traffic Manager profile"}], "correct": ["A"], "explanation": "Training across multiple GPU nodes for large models/datasets is explicitly \"manage distributed training for large and deep learning models.\" B, C, and D can't support this scale."}, {"id": "Q16", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need a repeatable, orchestrated sequence of data prep, training, and evaluation steps that can be triggered automatically. What should you implement?", "options": [{"label": "A", "text": "A training pipeline"}, {"label": "B", "text": "A single ad hoc script run manually each time"}, {"label": "C", "text": "A static notebook with no automation"}, {"label": "D", "text": "A DNS CNAME record"}], "correct": ["A"], "explanation": "A repeatable, orchestrated, triggerable sequence of steps is explicitly \"implement training pipelines.\" B, C, and D lack automation/repeatability."}, {"id": "Q17", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "After several training runs, you need to objectively compare their metrics to select the best-performing model. What should you use?", "options": [{"label": "A", "text": "Compare model performance across jobs (via tracked metrics)"}, {"label": "B", "text": "Visual inspection of code only"}, {"label": "C", "text": "Random selection"}, {"label": "D", "text": "The job with the shortest runtime, regardless of accuracy"}], "correct": ["A"], "explanation": "Objective comparison across runs is explicitly \"compare model performance across jobs,\" relying on the metrics captured via experiment tracking. B, C, and D are subjective or irrelevant to model quality."}, {"id": "Q18", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to bundle the logic that retrieves specific features at inference time together with the trained model artifact. What should you do?", "options": [{"label": "A", "text": "Package a feature retrieval specification with the model artifact"}, {"label": "B", "text": "Store features in an unrelated, undocumented spreadsheet"}, {"label": "C", "text": "Discard feature logic after training"}, {"label": "D", "text": "Hardcode feature values into the application"}], "correct": ["A"], "explanation": "This is the exact skill statement, ensuring consistent features are used at inference time. B, C, and D lose or misuse feature logic."}, {"id": "Q19", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to formally register a trained model with lineage back to its experiment run, so it can be deployed and audited. What should you do?", "options": [{"label": "A", "text": "Register an MLflow model in the workspace model registry"}, {"label": "B", "text": "Save the model only to a developer's local disk"}, {"label": "C", "text": "Email the model file to stakeholders"}, {"label": "D", "text": "Skip registration and deploy directly from a notebook"}], "correct": ["A"], "explanation": "Formal registration with lineage is explicitly \"register an MLflow model.\" B, C, and D bypass registration, losing traceability and auditability."}, {"id": "Q20", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Before promoting a model to production, you need to assess it for fairness, transparency, and potential harms. What should you apply?", "options": [{"label": "A", "text": "Evaluate the model using responsible AI principles"}, {"label": "B", "text": "Skip evaluation to save time"}, {"label": "C", "text": "Evaluate only training speed"}, {"label": "D", "text": "Evaluate only storage cost"}], "correct": ["A"], "explanation": "Assessing fairness, transparency, and harms before production is explicitly \"evaluate a model by using responsible AI principles.\" B, C, and D ignore responsible AI obligations."}, {"id": "Q21", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "An older model version is no longer used but must be retained for compliance without cluttering the active registry. What should you do?", "options": [{"label": "A", "text": "Archive the model as part of lifecycle management"}, {"label": "B", "text": "Permanently delete all history"}, {"label": "C", "text": "Leave it as the default active version"}, {"label": "D", "text": "Duplicate it into every workspace"}], "correct": ["A"], "explanation": "Retaining for compliance while decluttering the active registry is explicitly \"manage model lifecycle, including archiving models.\" B loses required history; C and D create clutter/duplication without governance value."}, {"id": "Q22", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to serve real-time, low-latency predictions for a live application. What deployment type should you choose?", "options": [{"label": "A", "text": "A real-time (online) managed endpoint"}, {"label": "B", "text": "A batch endpoint scored once nightly"}, {"label": "C", "text": "No endpoint; run the notebook manually per request"}, {"label": "D", "text": "A static HTML page"}], "correct": ["A"], "explanation": "Low-latency, per-request predictions require a real-time managed endpoint, explicitly \"deploy models as real-time or batch endpoints\" \u2014 real-time fits the live-application requirement. B doesn't meet latency needs; C and D aren't production-viable."}, {"id": "Q23", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You need to score a large dataset of millions of records on a schedule, where latency per record doesn't matter. What deployment type fits best?", "options": [{"label": "A", "text": "A batch endpoint"}, {"label": "B", "text": "A real-time endpoint sized for single requests"}, {"label": "C", "text": "Manual scoring in a notebook per record"}, {"label": "D", "text": "No deployment; recompute the model each time"}], "correct": ["A"], "explanation": "High-volume, schedule-driven, latency-insensitive scoring is the defined use case for batch endpoints. B is inefficient/costly for this pattern; C and D don't scale or automate."}, {"id": "Q24", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "You want to shift production traffic gradually from an old model version to a new one, with the ability to revert quickly if issues arise. What should you implement?", "options": [{"label": "A", "text": "Progressive rollout and safe rollback strategies"}, {"label": "B", "text": "An immediate full cutover with no fallback"}, {"label": "C", "text": "Deleting the old version before validating the new one"}, {"label": "D", "text": "Manual DNS changes with no monitoring"}], "correct": ["A"], "explanation": "Gradual traffic shifting with quick reversion is explicitly \"implement progressive rollout and safe rollback strategies.\" B, C, and D carry high risk with no safety net."}, {"id": "Q25", "part": 1, "format": "single", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "After deployment, you observe that the statistical distribution of incoming production data no longer matches the training data. What should you detect?", "options": [{"label": "A", "text": "Data drift"}, {"label": "B", "text": "Network latency"}, {"label": "C", "text": "Billing overage only"}, {"label": "D", "text": "DNS propagation delay"}], "correct": ["A"], "explanation": "A mismatch between production and training data distributions is the definition of data drift, explicitly \"detect and analyze data drift.\" B, C, and D are unrelated operational metrics."}, {"id": "Q26", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to create isolated environments in Foundry for different generative AI projects, each with its own configuration. What should you create?", "options": [{"label": "A", "text": "Foundry resources and project environments"}, {"label": "B", "text": "A single shared project with no separation"}, {"label": "C", "text": "A single virtual machine with no project structure"}, {"label": "D", "text": "A DNS zone only"}], "correct": ["A"], "explanation": "Isolated, configurable environments per project are explicitly \"create and configure Foundry resources and project environments.\" B, C, and D don't provide project-level isolation."}, {"id": "Q27", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to grant a GenAIOps pipeline permission to deploy models without using long-lived credentials. What should you configure?", "options": [{"label": "A", "text": "Managed identities and role-based access control (RBAC)"}, {"label": "B", "text": "A shared password in a config file"}, {"label": "C", "text": "Anonymous public access"}, {"label": "D", "text": "A hardcoded connection string in source control"}], "correct": ["A"], "explanation": "Secretless, least-privilege pipeline permissions are explicitly \"configure identity and access management with managed identities and role-based access control (RBAC).\" B, C, and D are credential/security anti-patterns."}, {"id": "Q28", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Your generative AI infrastructure must not be reachable from the public internet. What should you implement?", "options": [{"label": "A", "text": "Network security and private networking configurations"}, {"label": "B", "text": "A public endpoint with no restrictions"}, {"label": "C", "text": "A wildcard firewall rule allowing all inbound traffic"}, {"label": "D", "text": "Disabling all authentication"}], "correct": ["A"], "explanation": "Removing public reachability is explicitly \"implement network security and private networking configurations.\" B, C, and D increase exposure or remove protection entirely."}, {"id": "Q29", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need repeatable, version-controlled deployment of Foundry infrastructure across environments. What should you use?", "options": [{"label": "A", "text": "Bicep templates and Azure CLI for infrastructure deployment"}, {"label": "B", "text": "Manual point-and-click configuration each time"}, {"label": "C", "text": "A shared spreadsheet of settings"}, {"label": "D", "text": "One-time manual notes with no automation"}], "correct": ["A"], "explanation": "Repeatable, version-controlled deployment is explicitly \"deploy infrastructure using Bicep templates and Azure CLI.\" B, C, and D are manual and not repeatable."}, {"id": "Q30", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to deploy a foundation model without managing dedicated compute infrastructure, paying only for what you use. What deployment option fits?", "options": [{"label": "A", "text": "Serverless API endpoints"}, {"label": "B", "text": "A dedicated, always-on managed compute cluster sized for peak load"}, {"label": "C", "text": "An on-premises GPU server"}, {"label": "D", "text": "A batch-only Logic App"}], "correct": ["A"], "explanation": "Consumption-based deployment with no dedicated infrastructure management is explicitly \"deploy foundation models by using serverless API endpoints.\" B introduces fixed costs/management overhead the requirement rules out; C and D don't fit Foundry-managed deployment."}, {"id": "Q31", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You have a steady, high-volume production workload and need guaranteed throughput at predictable cost. What should you configure?", "options": [{"label": "A", "text": "Provisioned throughput units (PTUs)"}, {"label": "B", "text": "Serverless pay-as-you-go only"}, {"label": "C", "text": "A free-tier evaluation deployment"}, {"label": "D", "text": "No deployment; call the public playground"}], "correct": ["A"], "explanation": "Guaranteed throughput at predictable cost for steady, high volume is explicitly \"configure provisioned throughput units for high-volume workloads.\" B doesn't guarantee throughput; C and D don't fit production scale."}, {"id": "Q32", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to choose between two candidate foundation models for a specific business use case. What should guide your decision?", "options": [{"label": "A", "text": "Selecting the appropriate model for the specific use case (capability, cost, latency fit)"}, {"label": "B", "text": "Always choosing the largest available model regardless of task"}, {"label": "C", "text": "Always choosing the cheapest model regardless of accuracy needs"}, {"label": "D", "text": "Choosing a model at random"}], "correct": ["A"], "explanation": "This is explicitly \"select appropriate models for specific use cases\" \u2014 a deliberate fit-for-purpose decision, not a default choice. B and C ignore requirements; D is not an engineering decision."}, {"id": "Q33", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to roll out a new foundation model version to production in a controlled, staged manner. What should you implement?", "options": [{"label": "A", "text": "Model versioning and production deployment strategies"}, {"label": "B", "text": "Directly overwriting the production endpoint with no staging"}, {"label": "C", "text": "Deploying to production before any testing"}, {"label": "D", "text": "Skipping versioning entirely"}], "correct": ["A"], "explanation": "Controlled, staged rollout of new model versions is explicitly \"implement model versioning and production deployment strategies.\" B, C, and D bypass safe deployment practice."}, {"id": "Q34", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Your generative AI application experiences high, sustained request volume and needs guaranteed capacity reserved in advance. What should you configure?", "options": [{"label": "A", "text": "Provisioned throughput units (PTUs) sized for the workload"}, {"label": "B", "text": "A single low-tier serverless endpoint with default limits"}, {"label": "C", "text": "No capacity planning"}, {"label": "D", "text": "A local development-only endpoint"}], "correct": ["A"], "explanation": "Reserved, guaranteed capacity for sustained high volume again points to PTUs, explicitly designed for \"high-volume workloads.\" B risks throttling; C and D don't meet production needs."}, {"id": "Q35", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to test two different prompt designs against each other to see which performs better before choosing one for production. What should you implement?", "options": [{"label": "A", "text": "Prompt variants with performance comparison"}, {"label": "B", "text": "A single, permanently fixed prompt with no iteration"}, {"label": "C", "text": "Removing prompts entirely"}, {"label": "D", "text": "A random prompt generator with no evaluation"}], "correct": ["A"], "explanation": "Testing competing prompt designs against each other is explicitly \"create prompt variants and compare performance across different prompts.\" B, C, and D prevent iteration or evaluation."}, {"id": "Q36", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need to track changes to prompt templates over time and roll back to a previous version if a new prompt underperforms. What should you use?", "options": [{"label": "A", "text": "Version control for prompts using Git repositories"}, {"label": "B", "text": "No tracking; overwrite prompts directly in production"}, {"label": "C", "text": "Emailing prompt text between team members"}, {"label": "D", "text": "A static, uneditable prompt file with no history"}], "correct": ["A"], "explanation": "Tracking prompt history with rollback capability is explicitly \"implement version control for prompts by using Git repositories.\" B, C, and D lose history and auditability."}, {"id": "Q37", "part": 1, "format": "single", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "You need consistent, reviewable prompt authoring practices before deploying prompts to production. What should you implement?", "options": [{"label": "A", "text": "Designing and developing prompts through a structured, source-controlled process"}, {"label": "B", "text": "Allowing any team member to edit production prompts directly with no review"}, {"label": "C", "text": "Hardcoding prompts with no documentation"}, {"label": "D", "text": "Randomizing prompt wording per request"}], "correct": ["A"], "explanation": "This matches \"design and develop prompts\" as part of a managed, reviewable practice (paired with version control). B, C, and D introduce inconsistency and risk with no review."}, {"id": "Q38", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "You need a reliable dataset to consistently evaluate model output quality across releases. What should you create?", "options": [{"label": "A", "text": "Test datasets and data mapping for model evaluation"}, {"label": "B", "text": "A single manually eyeballed example"}, {"label": "C", "text": "No dataset; rely on user complaints only"}, {"label": "D", "text": "Random unlabeled data with no ground truth"}], "correct": ["A"], "explanation": "Consistent, repeatable evaluation requires curated test datasets, explicitly \"create test datasets and data mapping for comprehensive model evaluation.\" B, C, and D are unreliable or nonexistent evaluation approaches."}, {"id": "Q39", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "You need to measure whether a generative AI response is factually supported by the retrieved source material. Which metric applies?", "options": [{"label": "A", "text": "Groundedness"}, {"label": "B", "text": "Latency"}, {"label": "C", "text": "Token cost"}, {"label": "D", "text": "Network throughput"}], "correct": ["A"], "explanation": "Groundedness specifically measures whether output is supported by source material, explicitly listed among \"AI quality metrics, including groundedness, relevance, coherence, and fluency.\" B, C, and D are operational, not quality, metrics."}, {"id": "Q40", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "You need to check generated content for harmful or unsafe material before it reaches end users. What should you configure?", "options": [{"label": "A", "text": "Risk and safety evaluations for harmful content detection"}, {"label": "B", "text": "A billing budget alert"}, {"label": "C", "text": "A DNS health check"}, {"label": "D", "text": "A compute autoscale rule"}], "correct": ["A"], "explanation": "This matches \"configure risk and safety evaluations for harmful content detection\" directly. B, C, and D don't assess content safety."}, {"id": "Q41", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "You want evaluations to run automatically on every new model or prompt version without manual intervention. What should you implement?", "options": [{"label": "A", "text": "Automated evaluation workflows using built-in and custom metrics"}, {"label": "B", "text": "A manual quarterly review only"}, {"label": "C", "text": "No evaluation process"}, {"label": "D", "text": "A one-time evaluation that is never repeated"}], "correct": ["A"], "explanation": "Running evaluations automatically on new versions is explicitly \"set up automated evaluation workflows by using built-in and custom evaluation metrics.\" B and D are infrequent/one-off; C skips evaluation entirely."}, {"id": "Q42", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "You need ongoing visibility into a deployed generative AI application's health after release. What should you use?", "options": [{"label": "A", "text": "Continuous monitoring in Foundry"}, {"label": "B", "text": "A single test performed before launch only"}, {"label": "C", "text": "No monitoring post-deployment"}, {"label": "D", "text": "Reviewing logs manually once a year"}], "correct": ["A"], "explanation": "Ongoing post-release visibility is explicitly \"examine continuous monitoring in Foundry.\" B, C, and D are one-time or absent monitoring, insufficient for production."}, {"id": "Q43", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Users report that responses are arriving too slowly. Which metrics should you examine?", "options": [{"label": "A", "text": "Latency, throughput, and response times"}, {"label": "B", "text": "Only the resource group's tags"}, {"label": "C", "text": "Only the model's parameter count"}, {"label": "D", "text": "Only the subscription's billing currency"}], "correct": ["A"], "explanation": "Diagnosing slowness requires exactly these metrics, explicitly listed under observability. B, C, and D carry no performance-diagnostic value."}, {"id": "Q44", "part": 1, "format": "single", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Finance flags that generative AI costs are rising unexpectedly. What should you track to diagnose this?", "options": [{"label": "A", "text": "Token consumption and resource usage cost metrics"}, {"label": "B", "text": "Network DNS resolution time"}, {"label": "C", "text": "Storage account redundancy tier"}, {"label": "D", "text": "Virtual network peering status"}], "correct": ["A"], "explanation": "Rising generative AI costs are diagnosed via \"cost metrics, including token consumption and resource usage.\" B, C, and D are unrelated to spend."}, {"id": "Q45", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Your RAG application retrieves too many irrelevant chunks. What should you tune to improve retrieval precision?", "options": [{"label": "A", "text": "Similarity thresholds, chunk sizes, and retrieval strategies"}, {"label": "B", "text": "The billing currency setting"}, {"label": "C", "text": "The subscription's region only"}, {"label": "D", "text": "The virtual network's subnet size"}], "correct": ["A"], "explanation": "Improving retrieval precision is explicitly \"optimize retrieval performance by tuning similarity thresholds, chunk sizes, and retrieval strategies.\" B, C, and D have no effect on retrieval quality."}, {"id": "Q46", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "You need an embedding model that performs well on your organization's specialized vocabulary rather than generic text. What should you do?", "options": [{"label": "A", "text": "Select and fine-tune embedding models for the domain-specific use case"}, {"label": "B", "text": "Use a generic embedding model with no evaluation"}, {"label": "C", "text": "Skip embeddings entirely"}, {"label": "D", "text": "Use a random vector as the embedding"}], "correct": ["A"], "explanation": "Domain vocabulary performance requires selecting/fine-tuning embeddings, explicitly \"select and fine-tune embedding models for domain-specific use cases and accuracy improvements.\" B, C, and D degrade retrieval quality."}, {"id": "Q47", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "You want to combine exact keyword matches with semantic similarity to improve retrieval accuracy. What should you implement?", "options": [{"label": "A", "text": "Hybrid search combining semantic and keyword-based retrieval"}, {"label": "B", "text": "Keyword-only search"}, {"label": "C", "text": "Semantic-only search with no evaluation"}, {"label": "D", "text": "No search; return all documents unranked"}], "correct": ["A"], "explanation": "Combining exact and semantic matching is explicitly \"implement and optimize hybrid search approaches combining semantic and keyword-based retrieval.\" B and C only cover half the requirement; D provides no ranking at all."}, {"id": "Q48", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "You need objective evidence of which RAG configuration performs better before rolling it out broadly. What should you run?", "options": [{"label": "A", "text": "A/B testing framework with relevance metrics"}, {"label": "B", "text": "A single anecdotal user report"}, {"label": "C", "text": "No testing; ship both configurations simultaneously to everyone"}, {"label": "D", "text": "A coin flip"}], "correct": ["A"], "explanation": "Objective, evidence-based comparison before broad rollout is explicitly \"evaluate and improve RAG system performance by using relevance metrics and A/B testing frameworks.\" B, C, and D are unreliable or reckless."}, {"id": "Q49", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "You need to adapt a foundation model to a narrow, specialized task using advanced customization beyond prompt engineering. What should you implement?", "options": [{"label": "A", "text": "Advanced fine-tuning methods"}, {"label": "B", "text": "Increasing the context window only"}, {"label": "C", "text": "Disabling evaluation"}, {"label": "D", "text": "Reducing the model to zero-shot prompting only"}], "correct": ["A"], "explanation": "Adapting a model to a narrow task beyond prompting is explicitly \"design and implement advanced fine-tuning methods.\" B, C, and D don't customize model behavior."}, {"id": "Q50", "part": 1, "format": "single", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "You lack enough real-world labeled examples to fine-tune a model for a niche scenario. What should you generate?", "options": [{"label": "A", "text": "Synthetic data for fine-tuning"}, {"label": "B", "text": "No additional data; proceed without training"}, {"label": "C", "text": "Random noise as training data"}, {"label": "D", "text": "Unrelated public data with no relevance to the task"}], "correct": ["A"], "explanation": "Generating additional training examples when real labeled data is scarce is explicitly \"create and manage synthetic data for fine-tuning.\" B, C, and D would produce a poor or untrained model.\n\n---\n\n---"}, {"id": "MS1", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO should you configure to control who can create or delete resources within a Machine Learning workspace?", "select_n": 2, "options": [{"label": "A", "text": "Identity and access management (RBAC) roles"}, {"label": "B", "text": "A shared admin password for the whole team"}, {"label": "C", "text": "Scoped role assignments per user/group"}, {"label": "D", "text": "No access control, since it's an internal tool"}, {"label": "E", "text": "A single global API key"}], "correct": ["A", "C"], "explanation": "RBAC and scoped role assignments are the explicit least-privilege access control mechanism for workspaces. B, D, E are security anti-patterns."}, {"id": "MS2", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO assets can be shared across multiple Machine Learning workspaces using a registry?", "select_n": 2, "options": [{"label": "A", "text": "Environments"}, {"label": "B", "text": "Components"}, {"label": "C", "text": "Billing alerts"}, {"label": "D", "text": "Network security group rules"}, {"label": "E", "text": "DNS zones"}], "correct": ["A", "B"], "explanation": "Environments and components are explicitly listed as assets shareable via registries. C, D, E aren't ML workspace assets at all."}, {"id": "MS3", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO practices support secure, secret-free GitHub Actions authentication to Azure?", "select_n": 2, "options": [{"label": "A", "text": "Federated/OIDC credentials"}, {"label": "B", "text": "GitHub integration configured for secure access"}, {"label": "C", "text": "A long-lived service principal password stored in the workflow file"}, {"label": "D", "text": "Shared personal login credentials"}, {"label": "E", "text": "No authentication step"}], "correct": ["A", "B"], "explanation": "Federated/OIDC credentials and secure GitHub integration are the explicit secret-free authentication approach. C, D, E are credential anti-patterns."}, {"id": "MS4", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO should be defined as infrastructure as code for a Machine Learning workspace deployment?", "select_n": 2, "options": [{"label": "A", "text": "Bicep templates"}, {"label": "B", "text": "Azure CLI deployment scripts"}, {"label": "C", "text": "A manually maintained spreadsheet of settings"}, {"label": "D", "text": "A one-time PowerShell script never checked into source control"}, {"label": "E", "text": "Verbal instructions passed between team members"}], "correct": ["A", "B"], "explanation": "Bicep and Azure CLI are explicitly named as the IaC tools for workspace deployment. C, D, E are manual, non-repeatable practices."}, {"id": "MS5", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO compute configurations help control training cost while still supporting burst workloads?", "select_n": 2, "options": [{"label": "A", "text": "An autoscaling compute cluster"}, {"label": "B", "text": "A minimum node count of zero when idle"}, {"label": "C", "text": "A single, always-on maximum-size VM"}, {"label": "D", "text": "Disabling compute entirely between jobs"}, {"label": "E", "text": "A fixed-size cluster sized for peak load year-round"}], "correct": ["A", "B"], "explanation": "Autoscaling with a minimum of zero nodes controls idle cost while still supporting bursts. C and E overpay for idle capacity; D breaks availability for training entirely."}, {"id": "MS6", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO items should a datastore/data asset strategy provide?", "select_n": 2, "options": [{"label": "A", "text": "A reference to underlying storage without duplicating data"}, {"label": "B", "text": "Schema and versioning for training data"}, {"label": "C", "text": "A hardcoded local file path on one engineer's laptop"}, {"label": "D", "text": "Manual copying of files into every workspace"}, {"label": "E", "text": "No tracking of data lineage"}], "correct": ["A", "B"], "explanation": "Datastores reference storage without duplication; data assets add schema/versioning \u2014 both explicitly listed capabilities. C, D, E are manual/untracked anti-patterns."}, {"id": "MS7", "part": 3, "format": "multi", "domain": "Domain 1: Design and implement an MLOps infrastructure", "question": "Which TWO practices help prevent public exposure of a Machine Learning workspace?", "select_n": 2, "options": [{"label": "A", "text": "Restricting network access via private endpoints/VNet integration"}, {"label": "B", "text": "Disabling public network access on the workspace"}, {"label": "C", "text": "A wildcard inbound firewall rule allowing all traffic"}, {"label": "D", "text": "Anonymous access with no authentication"}, {"label": "E", "text": "An unauthenticated public IP with no restrictions"}], "correct": ["A", "B"], "explanation": "Restricting network access via private endpoints/VNet integration and disabling public network access are both explicit, complementary controls for preventing public exposure \u2014 \"restrict network access to Machine Learning workspaces\" covers both the network path and the public-access toggle. C, D, E all actively increase exposure."}, {"id": "MS8", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO does MLflow experiment tracking capture for each training run?", "select_n": 2, "options": [{"label": "A", "text": "Parameters"}, {"label": "B", "text": "Metrics and artifacts"}, {"label": "C", "text": "The engineer's calendar availability"}, {"label": "D", "text": "The Azure region's postal code"}, {"label": "E", "text": "The subscription's billing currency"}], "correct": ["A", "B"], "explanation": "MLflow explicitly tracks parameters, metrics, and artifacts. C, D, E carry no experiment data."}, {"id": "MS9", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO are valid ways to accelerate finding a strong baseline model with minimal manual effort?", "select_n": 2, "options": [{"label": "A", "text": "Automated machine learning (AutoML)"}, {"label": "B", "text": "Automated hyperparameter tuning (sweep jobs)"}, {"label": "C", "text": "Manually guessing parameters with no tracking"}, {"label": "D", "text": "Skipping evaluation entirely"}, {"label": "E", "text": "Randomly selecting a model with no comparison"}], "correct": ["A", "B"], "explanation": "AutoML and automated hyperparameter tuning both minimize manual effort in finding a strong baseline. C, D, E skip rigor entirely."}, {"id": "MS10", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO should be bundled or tracked together when registering a model for production use?", "select_n": 2, "options": [{"label": "A", "text": "The model artifact"}, {"label": "B", "text": "A feature retrieval specification"}, {"label": "C", "text": "An unrelated marketing document"}, {"label": "D", "text": "The engineer's personal notes with no structure"}, {"label": "E", "text": "A random, unversioned file"}], "correct": ["A", "B"], "explanation": "The model artifact and its feature retrieval specification should be packaged/tracked together, per the explicit skill statement. C, D, E are unrelated or unstructured."}, {"id": "MS11", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO deployment strategies reduce risk when releasing a new model version to production?", "select_n": 2, "options": [{"label": "A", "text": "Progressive rollout"}, {"label": "B", "text": "Safe rollback capability"}, {"label": "C", "text": "An immediate full cutover with no fallback"}, {"label": "D", "text": "Deleting the previous version before validating the new one"}, {"label": "E", "text": "Skipping testing entirely"}], "correct": ["A", "B"], "explanation": "Progressive rollout and safe rollback are the explicit risk-reduction strategies named in the skills outline. C, D, E increase risk."}, {"id": "MS12", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO should be monitored continuously for a model already in production?", "select_n": 2, "options": [{"label": "A", "text": "Data drift"}, {"label": "B", "text": "Performance metrics against baseline"}, {"label": "C", "text": "The Azure portal's color theme"}, {"label": "D", "text": "The number of browser tabs open"}, {"label": "E", "text": "The resource group's tag count"}], "correct": ["A", "B"], "explanation": "Drift and performance-against-baseline are the explicit ongoing production monitoring targets. C, D, E carry no model-quality signal."}, {"id": "MS13", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO endpoint types are explicitly supported for deploying machine learning models?", "select_n": 2, "options": [{"label": "A", "text": "Real-time (online) endpoints"}, {"label": "B", "text": "Batch endpoints"}, {"label": "C", "text": "A DNS-only endpoint"}, {"label": "D", "text": "A billing-only endpoint"}, {"label": "E", "text": "A storage-only endpoint"}], "correct": ["A", "B"], "explanation": "Real-time and batch are explicitly the two supported endpoint types. C, D, E aren't valid endpoint types."}, {"id": "MS14", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO should be part of evaluating a model using responsible AI principles before production deployment?", "select_n": 2, "options": [{"label": "A", "text": "Fairness assessment"}, {"label": "B", "text": "Transparency/explainability review"}, {"label": "C", "text": "Only training speed"}, {"label": "D", "text": "Only storage cost"}, {"label": "E", "text": "Only the model's file size"}], "correct": ["A", "B"], "explanation": "Fairness and transparency are core responsible AI evaluation dimensions, explicitly required before production. C, D, E ignore responsible AI entirely."}, {"id": "MS15", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO capabilities does a training pipeline provide compared to an ad hoc manual script?", "select_n": 2, "options": [{"label": "A", "text": "Repeatability"}, {"label": "B", "text": "Automated triggering"}, {"label": "C", "text": "One-time, non-reusable execution only"}, {"label": "D", "text": "No version history"}, {"label": "E", "text": "No orchestration of steps"}], "correct": ["A", "B"], "explanation": "Repeatability and automated triggering are the defining advantages of a formal pipeline over an ad hoc script. C, D, E describe the ad hoc approach being replaced."}, {"id": "MS16", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO are valid reasons to archive rather than permanently delete an old model version?", "select_n": 2, "options": [{"label": "A", "text": "Compliance/retention requirements"}, {"label": "B", "text": "Reducing clutter in the active registry while preserving history"}, {"label": "C", "text": "Making the model impossible to audit later"}, {"label": "D", "text": "Freeing up unlimited storage with no tracking"}, {"label": "E", "text": "Preventing any future reference to the model"}], "correct": ["A", "B"], "explanation": "Compliance retention and registry decluttering are the explicit reasons for archiving over deletion. C, D, E describe outcomes archiving is meant to avoid."}, {"id": "MS17", "part": 3, "format": "multi", "domain": "Domain 2: Implement machine learning model lifecycle and operations", "question": "Which TWO support large-scale distributed training for deep learning models?", "select_n": 2, "options": [{"label": "A", "text": "Multiple GPU/compute nodes working in coordination"}, {"label": "B", "text": "A distributed training configuration/framework"}, {"label": "C", "text": "A single CPU-only compute instance"}, {"label": "D", "text": "Manual single-threaded execution"}, {"label": "E", "text": "No compute cluster at all"}], "correct": ["A", "B"], "explanation": "Multiple coordinated nodes and a distributed training configuration are both required for distributed training of large models. C, D, E describe single-node, non-distributed setups."}, {"id": "MS18", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO should be configured to secure a GenAIOps pipeline's access to Foundry resources?", "select_n": 2, "options": [{"label": "A", "text": "Managed identities"}, {"label": "B", "text": "Role-based access control (RBAC)"}, {"label": "C", "text": "A shared password in a config file"}, {"label": "D", "text": "Anonymous public access"}, {"label": "E", "text": "A hardcoded connection string in source control"}], "correct": ["A", "B"], "explanation": "Managed identities and RBAC are the explicit secure access mechanism for GenAIOps pipelines. C, D, E are credential/security anti-patterns."}, {"id": "MS19", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO deployment options are available for foundation models in Foundry?", "select_n": 2, "options": [{"label": "A", "text": "Serverless API endpoints"}, {"label": "B", "text": "Provisioned throughput units (PTUs) / managed compute"}, {"label": "C", "text": "A DNS-only deployment"}, {"label": "D", "text": "A billing-only deployment"}, {"label": "E", "text": "A storage-only deployment"}], "correct": ["A", "B"], "explanation": "Serverless and PTU/managed compute are explicitly the two foundation model deployment options. C, D, E aren't valid deployment types."}, {"id": "MS20", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO practices support repeatable, version-controlled Foundry infrastructure deployment?", "select_n": 2, "options": [{"label": "A", "text": "Bicep templates"}, {"label": "B", "text": "Azure CLI automation"}, {"label": "C", "text": "Manual point-and-click configuration each time"}, {"label": "D", "text": "A shared spreadsheet of settings with no automation"}, {"label": "E", "text": "Undocumented, one-off manual changes"}], "correct": ["A", "B"], "explanation": "Bicep and Azure CLI automation provide repeatable, version-controlled deployment. C, D, E are manual and non-repeatable."}, {"id": "MS21", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO factors should guide selecting a foundation model for a specific use case?", "select_n": 2, "options": [{"label": "A", "text": "Task capability fit"}, {"label": "B", "text": "Cost and latency requirements"}, {"label": "C", "text": "Always picking the largest model regardless of task"}, {"label": "D", "text": "Always picking the cheapest model regardless of accuracy needs"}, {"label": "E", "text": "Random selection"}], "correct": ["A", "B"], "explanation": "Task capability fit and cost/latency requirements are the explicit factors for model selection. C, D, E ignore requirements entirely."}, {"id": "MS22", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO practices support safe, controlled prompt management?", "select_n": 2, "options": [{"label": "A", "text": "Prompt version control using Git"}, {"label": "B", "text": "Creating and comparing prompt variants"}, {"label": "C", "text": "Directly overwriting production prompts with no review"}, {"label": "D", "text": "Emailing prompt text between team members with no tracking"}, {"label": "E", "text": "A static, uneditable prompt file with no history"}], "correct": ["A", "B"], "explanation": "Git-based version control and prompt variant comparison are the explicit safe prompt management practices. C, D, E lack tracking or review."}, {"id": "MS23", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO network/security configurations should a production GenAIOps environment include?", "select_n": 2, "options": [{"label": "A", "text": "Private networking configuration"}, {"label": "B", "text": "Identity and access management with RBAC"}, {"label": "C", "text": "A public endpoint with no restrictions"}, {"label": "D", "text": "Disabled authentication"}, {"label": "E", "text": "A wildcard firewall rule allowing all inbound traffic"}], "correct": ["A", "B"], "explanation": "Private networking and RBAC-based identity management are the explicit security configurations for production GenAIOps environments. C, D, E increase exposure or remove security."}, {"id": "MS24", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO scenarios justify using provisioned throughput units (PTUs) over serverless deployment?", "select_n": 2, "options": [{"label": "A", "text": "Steady, high-volume production traffic"}, {"label": "B", "text": "A need for guaranteed, predictable throughput"}, {"label": "C", "text": "Highly unpredictable, low-volume traffic"}, {"label": "D", "text": "A one-time development test"}, {"label": "E", "text": "A workload with no cost or performance requirements"}], "correct": ["A", "B"], "explanation": "Steady, high-volume traffic needing guaranteed throughput is precisely the PTU use case. C, D, E fit serverless or aren't production scenarios at all."}, {"id": "MS25", "part": 3, "format": "multi", "domain": "Domain 3: Design and implement a GenAIOps infrastructure", "question": "Which TWO elements should a Foundry project environment configuration include?", "select_n": 2, "options": [{"label": "A", "text": "Identity and access management settings"}, {"label": "B", "text": "Network security/private networking configuration"}, {"label": "C", "text": "An unrelated marketing webpage"}, {"label": "D", "text": "A DNS-only configuration with no compute"}, {"label": "E", "text": "A billing-only configuration with no resources"}], "correct": ["A", "B"], "explanation": "Identity/access management and network security are explicitly listed Foundry project environment configuration elements. C, D, E aren't valid environment configuration components."}, {"id": "MS26", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO metrics are explicitly part of AI quality evaluation?", "select_n": 2, "options": [{"label": "A", "text": "Groundedness"}, {"label": "B", "text": "Relevance"}, {"label": "C", "text": "The Azure region's population"}, {"label": "D", "text": "The subscription's default currency"}, {"label": "E", "text": "The number of resource tags"}], "correct": ["A", "B"], "explanation": "Groundedness and relevance are explicitly listed AI quality metrics (alongside coherence and fluency). C, D, E are irrelevant to output quality."}, {"id": "MS27", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO should an automated evaluation workflow use?", "select_n": 2, "options": [{"label": "A", "text": "Built-in evaluation metrics"}, {"label": "B", "text": "Custom evaluation metrics"}, {"label": "C", "text": "No metrics at all"}, {"label": "D", "text": "A single manual eyeball check only"}, {"label": "E", "text": "A metric chosen at random"}], "correct": ["A", "B"], "explanation": "Built-in and custom metrics are explicitly what automated evaluation workflows use. C, D, E skip or randomize evaluation."}, {"id": "MS28", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO should be tracked to diagnose rising generative AI operational costs?", "select_n": 2, "options": [{"label": "A", "text": "Token consumption"}, {"label": "B", "text": "Resource usage"}, {"label": "C", "text": "DNS resolution time"}, {"label": "D", "text": "Storage account redundancy tier"}, {"label": "E", "text": "Virtual network peering status"}], "correct": ["A", "B"], "explanation": "Token consumption and resource usage are explicitly the cost metrics to track. C, D, E carry no cost signal."}, {"id": "MS29", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO should be part of production observability for a generative AI application?", "select_n": 2, "options": [{"label": "A", "text": "Detailed logging and tracing"}, {"label": "B", "text": "Latency and throughput monitoring"}, {"label": "C", "text": "The Foundry portal's font size"}, {"label": "D", "text": "The number of installed browser extensions"}, {"label": "E", "text": "The resource's creation date only"}], "correct": ["A", "B"], "explanation": "Detailed logging/tracing and latency/throughput monitoring are explicitly listed observability components. C, D, E carry no operational insight."}, {"id": "MS30", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO should a risk and safety evaluation check for?", "select_n": 2, "options": [{"label": "A", "text": "Harmful content categories"}, {"label": "B", "text": "Policy violations in generated output"}, {"label": "C", "text": "The billing currency"}, {"label": "D", "text": "The subscription ID"}, {"label": "E", "text": "The Azure region's time zone"}], "correct": ["A", "B"], "explanation": "Harmful content categories and policy violations are explicitly what risk and safety evaluations check for. C, D, E are unrelated to content safety."}, {"id": "MS31", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO datasets/artifacts are needed to run comprehensive model evaluation?", "select_n": 2, "options": [{"label": "A", "text": "A curated test dataset"}, {"label": "B", "text": "Data mapping/ground truth references"}, {"label": "C", "text": "A random, unlabeled sample with no ground truth"}, {"label": "D", "text": "A single manually eyeballed example"}, {"label": "E", "text": "No dataset at all"}], "correct": ["A", "B"], "explanation": "A curated test dataset with data mapping/ground truth is explicitly required for comprehensive evaluation. C, D, E lack the rigor needed for reliable evaluation."}, {"id": "MS32", "part": 3, "format": "multi", "domain": "Domain 4: Implement generative AI quality assurance and observability", "question": "Which TWO capabilities does continuous monitoring in Foundry provide after deployment?", "select_n": 2, "options": [{"label": "A", "text": "Ongoing visibility into application health"}, {"label": "B", "text": "Early detection of performance/quality regressions"}, {"label": "C", "text": "A one-time check performed only before launch"}, {"label": "D", "text": "No visibility after deployment"}, {"label": "E", "text": "A manual annual log review only"}], "correct": ["A", "B"], "explanation": "Ongoing visibility and early regression detection are the explicit benefits of continuous monitoring. C, D, E describe insufficient, one-off approaches."}, {"id": "MS33", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO levers should you tune to improve RAG retrieval precision?", "select_n": 2, "options": [{"label": "A", "text": "Similarity thresholds"}, {"label": "B", "text": "Chunk sizes"}, {"label": "C", "text": "The billing currency"}, {"label": "D", "text": "The subscription's region only"}, {"label": "E", "text": "The virtual network's subnet size"}], "correct": ["A", "B"], "explanation": "Similarity thresholds and chunk sizes are explicitly the levers for tuning retrieval performance. C, D, E have no effect on retrieval."}, {"id": "MS34", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO approaches combine to form hybrid search?", "select_n": 2, "options": [{"label": "A", "text": "Semantic/vector retrieval"}, {"label": "B", "text": "Keyword-based retrieval"}, {"label": "C", "text": "DNS-based lookup"}, {"label": "D", "text": "Billing-based lookup"}, {"label": "E", "text": "Network topology lookup"}], "correct": ["A", "B"], "explanation": "Semantic/vector and keyword retrieval are explicitly the two components of hybrid search. C, D, E aren't search types."}, {"id": "MS35", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO should you use to validate a RAG configuration change before broad rollout?", "select_n": 2, "options": [{"label": "A", "text": "A/B testing"}, {"label": "B", "text": "Relevance metrics"}, {"label": "C", "text": "A single anecdotal report"}, {"label": "D", "text": "A coin flip"}, {"label": "E", "text": "No testing at all"}], "correct": ["A", "B"], "explanation": "A/B testing with relevance metrics is the explicit validation approach before broad rollout. C, D, E are unreliable or reckless."}, {"id": "MS36", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO are valid reasons to select or fine-tune a custom embedding model?", "select_n": 2, "options": [{"label": "A", "text": "Improving performance on domain-specific vocabulary"}, {"label": "B", "text": "Improving retrieval accuracy for specialized content"}, {"label": "C", "text": "Making retrieval intentionally less accurate"}, {"label": "D", "text": "Removing the need for any evaluation"}, {"label": "E", "text": "Guaranteeing zero cost regardless of usage"}], "correct": ["A", "B"], "explanation": "Domain vocabulary performance and specialized retrieval accuracy are the explicit reasons to select/fine-tune embeddings. C, D, E describe negative or irrelevant outcomes."}, {"id": "MS37", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO are valid advanced model customization techniques beyond basic prompt engineering?", "select_n": 2, "options": [{"label": "A", "text": "Advanced fine-tuning methods"}, {"label": "B", "text": "Synthetic data generation for fine-tuning"}, {"label": "C", "text": "Increasing the context window only, with no other changes"}, {"label": "D", "text": "Disabling evaluation"}, {"label": "E", "text": "Reducing the model to zero-shot prompting only"}], "correct": ["A", "B"], "explanation": "Advanced fine-tuning and synthetic data generation are explicitly listed advanced customization techniques. C, D, E don't customize model behavior meaningfully."}, {"id": "MS38", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO should you monitor when managing a fine-tuned model from development through production?", "select_n": 2, "options": [{"label": "A", "text": "Model performance over time"}, {"label": "B", "text": "Drift or degradation after deployment"}, {"label": "C", "text": "The Azure region's postal code"}, {"label": "D", "text": "The number of resource tags"}, {"label": "E", "text": "The subscription's creation date"}], "correct": ["A", "B"], "explanation": "Performance and drift/degradation monitoring are explicitly required across the fine-tuned model's lifecycle. C, D, E carry no model-quality signal."}, {"id": "MS39", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO are valid outcomes of optimizing chunk size and retrieval strategy in a RAG system?", "select_n": 2, "options": [{"label": "A", "text": "Improved relevance of retrieved content"}, {"label": "B", "text": "Reduced retrieval of irrelevant chunks"}, {"label": "C", "text": "Guaranteed zero latency regardless of configuration"}, {"label": "D", "text": "Elimination of all evaluation requirements"}, {"label": "E", "text": "Automatic compliance certification"}], "correct": ["A", "B"], "explanation": "Improved relevance and reduced irrelevant retrieval are the direct, explicit outcomes of tuning chunk size/retrieval strategy. C, D, E overstate or misrepresent what tuning accomplishes."}, {"id": "MS40", "part": 3, "format": "multi", "domain": "Domain 5: Optimize generative AI systems and model performance", "question": "Which TWO factors should guide whether to fine-tune a model versus rely on prompt engineering/RAG alone?", "select_n": 2, "options": [{"label": "A", "text": "Whether the task requires deep domain-specific behavior change"}, {"label": "B", "text": "Whether sufficient quality training data (real or synthetic) is available"}, {"label": "C", "text": "The Azure region's marketing name"}, {"label": "D", "text": "The number of browser tabs open"}, {"label": "E", "text": "The resource group's tag count"}], "correct": ["A", "B"], "explanation": "Depth of required domain behavior change and availability of quality training data are the practical factors distinguishing fine-tuning from prompt engineering/RAG alone. C, D, E are irrelevant to this architectural decision."}, {"id": "CS1-Q1", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "What should be used to track parameters, metrics, and artifacts across the weekly retraining runs?", "options": [{"label": "A", "text": "Experiment tracking with MLflow"}, {"label": "B", "text": "A static spreadsheet updated manually"}, {"label": "C", "text": "No tracking"}, {"label": "D", "text": "Emailing results between team members"}], "correct": ["A"], "explanation": "MLflow experiment tracking captures run metrics/parameters/artifacts, per Domain 2"}, {"id": "CS1-Q2", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "What should Woodgrove use to automatically explore multiple algorithms as part of the pipeline?", "options": [{"label": "A", "text": "Automated machine learning (AutoML)"}, {"label": "B", "text": "A single fixed algorithm with no exploration"}, {"label": "C", "text": "A rules-based lookup table"}, {"label": "D", "text": "A pretrained model with no tuning"}], "correct": ["A"], "explanation": "AutoML automatically explores algorithms, per Domain 2"}, {"id": "CS1-Q3", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "What should be used to search for optimal hyperparameter combinations?", "options": [{"label": "A", "text": "Automated hyperparameter tuning (sweep jobs)"}, {"label": "B", "text": "Manual guessing with no tracking"}, {"label": "C", "text": "A random, untracked search"}, {"label": "D", "text": "Skipping tuning entirely"}], "correct": ["A"], "explanation": "automated hyperparameter tuning/sweep jobs search parameter space, per Domain 2"}, {"id": "CS1-Q4", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "Before deployment, how should the winning model be made available with full lineage back to its training run?", "options": [{"label": "A", "text": "Register the model (e.g., as an MLflow model) in the workspace registry"}, {"label": "B", "text": "Save it only to a local disk"}, {"label": "C", "text": "Email the file to stakeholders"}, {"label": "D", "text": "Skip registration and deploy directly from a notebook"}], "correct": ["A"], "explanation": "registering an MLflow model preserves lineage back to the training run, per Domain 2"}, {"id": "CS1-Q5", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "Since claims must be scored individually as they arrive, what deployment type fits best?", "options": [{"label": "A", "text": "A real-time (online) managed endpoint"}, {"label": "B", "text": "A batch endpoint scored weekly"}, {"label": "C", "text": "No endpoint; run manually per claim"}, {"label": "D", "text": "A static report generated monthly"}], "correct": ["A"], "explanation": "individual claims scored on arrival require a real-time managed endpoint, per Domain 2"}, {"id": "CS1-Q6", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "Since fraud patterns evolve over time, what should be continuously monitored in production?", "options": [{"label": "A", "text": "Data drift"}, {"label": "B", "text": "The Azure region's postal code"}, {"label": "C", "text": "The resource group's tag count"}, {"label": "D", "text": "The subscription's billing currency"}], "correct": ["A"], "explanation": "evolving fraud patterns require ongoing data drift detection, per Domain 2"}, {"id": "CS1-Q7", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "How should all infrastructure be deployed to meet the \"no manually configured resources\" requirement?", "options": [{"label": "A", "text": "Bicep templates deployed via a GitHub Actions pipeline"}, {"label": "B", "text": "Manual portal configuration each time"}, {"label": "C", "text": "A one-off PowerShell script never reused"}, {"label": "D", "text": "Verbal instructions to an administrator"}], "correct": ["A"], "explanation": "Bicep deployed via GitHub Actions meets the \"no manual configuration\" IaC requirement, per Domain 1"}, {"id": "CS1-Q8", "part": 5, "format": "case", "domain": "Case Study 1: Woodgrove Insurance \u2014 Claims Model Pipeline", "case_background": "Woodgrove Insurance trains a fraud-detection model using Azure Machine Learning. Data scientists experiment in notebooks, then a formal pipeline retrains the model weekly using AutoML plus custom hyperparameter sweeps. Woodgrove needs every training run's metrics tracked for comparison, the winning model registered with full lineage, and deployment as a real-time endpoint scoring individual claims as they arrive. They also need drift detection since fraud patterns evolve, and all infrastructure must be deployed via Bicep from a GitHub repository with no manually configured resources.", "question": "How should the GitHub Actions workflow authenticate to Azure securely for this pipeline?", "options": [{"label": "A", "text": "Federated/OIDC credentials with no long-lived secrets"}, {"label": "B", "text": "A hardcoded password in the YAML file"}, {"label": "C", "text": "A shared personal login"}, {"label": "D", "text": "No authentication required"}], "correct": ["A"], "explanation": "federated/OIDC credentials avoid long-lived secrets in the GitHub workflow, per Domain 1"}, {"id": "CS2-Q1", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What deployment option should Relecloud use during predictable, high-volume business hours?", "options": [{"label": "A", "text": "Provisioned throughput units (PTUs)"}, {"label": "B", "text": "An unmanaged local server"}, {"label": "C", "text": "A one-time free trial deployment"}, {"label": "D", "text": "No deployment; use the public playground"}], "correct": ["A"], "explanation": "PTUs guarantee throughput for predictable high-volume business hours, per Domain 3"}, {"id": "CS2-Q2", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What deployment option minimizes cost during unpredictable off-peak periods?", "options": [{"label": "A", "text": "Serverless pay-as-you-go"}, {"label": "B", "text": "A fixed maximum-size PTU reservation active 24/7"}, {"label": "C", "text": "An on-premises GPU cluster"}, {"label": "D", "text": "A batch-only job with no live interaction"}], "correct": ["A"], "explanation": "serverless minimizes cost during unpredictable off-peak periods, per Domain 3"}, {"id": "CS2-Q3", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "How should prompt template changes be reviewed and versioned before reaching production?", "options": [{"label": "A", "text": "Version control for prompts using Git repositories"}, {"label": "B", "text": "Directly editing the production prompt with no review"}, {"label": "C", "text": "Emailing the new prompt text to the team"}, {"label": "D", "text": "A static, uneditable prompt file"}], "correct": ["A"], "explanation": "Git-based prompt version control enforces review before production, per Domain 3"}, {"id": "CS2-Q4", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What should run automatically on every new prompt or model version to catch safety and groundedness issues?", "options": [{"label": "A", "text": "Automated evaluation workflows with built-in and custom metrics"}, {"label": "B", "text": "A single manual check performed once a year"}, {"label": "C", "text": "No evaluation process"}, {"label": "D", "text": "A check performed only after a user complaint"}], "correct": ["A"], "explanation": "automated evaluation workflows catch safety/groundedness issues on every version, per Domain 4"}, {"id": "CS2-Q5", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What should the team track to diagnose ongoing operational cost and performance? (choose the single best answer for this scenario)", "options": [{"label": "A", "text": "Token consumption, latency, and throughput metrics"}, {"label": "B", "text": "The Azure region's postal code"}, {"label": "C", "text": "The number of browser tabs open"}, {"label": "D", "text": "The subscription's creation date"}], "correct": ["A"], "explanation": "token consumption, latency, and throughput are the explicit metrics to track for ongoing cost/performance diagnosis, per Domain 4"}, {"id": "CS2-Q6", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What caused the RAG configuration to return irrelevant chunks, based on the fix applied?", "options": [{"label": "A", "text": "Poorly tuned chunk size and lack of hybrid search"}, {"label": "B", "text": "An expired SSL certificate"}, {"label": "C", "text": "A DNS misconfiguration"}, {"label": "D", "text": "A billing quota issue"}], "correct": ["A"], "explanation": "poorly tuned chunk size and missing hybrid search directly cause poor retrieval precision, per Domain 5"}, {"id": "CS2-Q7", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "What technique did the team add to combine keyword and semantic matching and resolve the issue?", "options": [{"label": "A", "text": "Hybrid search"}, {"label": "B", "text": "Batch-only scoring"}, {"label": "C", "text": "A static FAQ lookup"}, {"label": "D", "text": "A single fixed keyword filter"}], "correct": ["A"], "explanation": "hybrid search combines keyword and semantic matching, per Domain 5"}, {"id": "CS2-Q8", "part": 5, "format": "case", "domain": "Case Study 2: Relecloud \u2014 Generative AI Support Bot Operations", "case_background": "Relecloud operates a generative AI support bot built on Foundry. The GenAIOps team deploys foundation models through serverless endpoints during off-peak periods but needs guaranteed throughput during business hours when volume is high and predictable. Every prompt template change must be reviewed and versioned before reaching production. The team runs automated evaluations (including safety and groundedness checks) on every new prompt or model version, and monitors token cost, latency, and throughput continuously. A recent incident involved a RAG configuration returning irrelevant chunks, which the team fixed by tuning chunk size and adding hybrid search.", "question": "Going forward, what should validate that the RAG fix actually improved results before it's fully rolled out?", "options": [{"label": "A", "text": "A/B testing with relevance metrics"}, {"label": "B", "text": "A single anecdotal user report"}, {"label": "C", "text": "No validation; assume it worked"}, {"label": "D", "text": "A coin flip"}], "correct": ["A"], "explanation": "A/B testing with relevance metrics validates improvements before full rollout, per Domain 5"}, {"id": "CS3-Q1", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "Since Litware lacks enough real labeled examples, what should they generate to support fine-tuning?", "options": [{"label": "A", "text": "Synthetic data"}, {"label": "B", "text": "No additional data; proceed without training"}, {"label": "C", "text": "Random noise"}, {"label": "D", "text": "Unrelated public data with no relevance"}], "correct": ["A"], "explanation": "synthetic data addresses the shortage of real labeled examples, per Domain 5"}, {"id": "CS3-Q2", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "What technique should Litware use to adapt the model to their specific domain jargon beyond basic prompting?", "options": [{"label": "A", "text": "Advanced fine-tuning methods"}, {"label": "B", "text": "Increasing the context window only"}, {"label": "C", "text": "Disabling evaluation"}, {"label": "D", "text": "Zero-shot prompting only"}], "correct": ["A"], "explanation": "advanced fine-tuning methods adapt the model beyond prompting, per Domain 5"}, {"id": "CS3-Q3", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "What should Litware do to track the fine-tuned model's performance from development through production?", "options": [{"label": "A", "text": "Manage the model lifecycle, including monitoring and versioning"}, {"label": "B", "text": "Deploy once with no further tracking"}, {"label": "C", "text": "Delete all records after initial deployment"}, {"label": "D", "text": "Rely solely on anecdotal feedback"}], "correct": ["A"], "explanation": "lifecycle management includes tracking performance from development through production, per Domain 2/5"}, {"id": "CS3-Q4", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "When an older fine-tuned version is replaced but must be retained for compliance, what should Litware do?", "options": [{"label": "A", "text": "Archive the model as part of lifecycle management"}, {"label": "B", "text": "Permanently delete it immediately"}, {"label": "C", "text": "Leave it as the active default version"}, {"label": "D", "text": "Duplicate it into every workspace"}], "correct": ["A"], "explanation": "archiving preserves compliance history while decluttering the active registry, per Domain 2"}, {"id": "CS3-Q5", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "How should the Foundry infrastructure for this pipeline be deployed to meet the automation requirement?", "options": [{"label": "A", "text": "Bicep templates"}, {"label": "B", "text": "Manual point-and-click configuration"}, {"label": "C", "text": "A shared spreadsheet of settings"}, {"label": "D", "text": "Undocumented one-off changes"}], "correct": ["A"], "explanation": "Bicep templates meet the automated infrastructure deployment requirement, per Domain 1/3"}, {"id": "CS3-Q6", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "How should access be restricted so the infrastructure is reachable only from the corporate VNet?", "options": [{"label": "A", "text": "Private networking configuration"}, {"label": "B", "text": "A public endpoint with no restriction"}, {"label": "C", "text": "A wildcard firewall rule allowing all inbound traffic"}, {"label": "D", "text": "Disabled authentication"}], "correct": ["A"], "explanation": "private networking restricts access to the corporate VNet only, per Domain 1/3"}, {"id": "CS3-Q7", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "How should the pipeline authenticate to Foundry resources without storing long-lived secrets?", "options": [{"label": "A", "text": "Managed identities with RBAC"}, {"label": "B", "text": "A hardcoded connection string"}, {"label": "C", "text": "A shared password in a config file"}, {"label": "D", "text": "Anonymous public access"}], "correct": ["A"], "explanation": "managed identities with RBAC avoid storing long-lived secrets, per Domain 1/3"}, {"id": "CS3-Q8", "part": 5, "format": "case", "domain": "Case Study 3: Litware Manufacturing \u2014 Fine-Tuned Quality Model", "case_background": "Litware Manufacturing wants a generative AI model fine-tuned to write highly specific, domain-jargon-heavy quality control reports. They have limited real labeled examples, so they plan to generate additional training examples synthetically. After fine-tuning, they need to monitor the model's performance from development through production and manage its full lifecycle, including eventually archiving older fine-tuned versions that are replaced. Infrastructure for the whole pipeline (Foundry projects, identity, networking) must be deployed via Bicep and restricted to the corporate VNet only.", "question": "What should Litware track post-deployment to detect if the fine-tuned model's quality degrades over time?", "options": [{"label": "A", "text": "Ongoing performance monitoring and drift detection"}, {"label": "B", "text": "The Azure region's marketing name only"}, {"label": "C", "text": "The number of resource tags"}, {"label": "D", "text": "The subscription's billing currency\n\n---\n\n# ANSWER KEY \u2014 PARTS 3, 4, AND 5"}], "correct": ["A"], "explanation": "ongoing performance monitoring and drift detection catch quality degradation post-deployment, per Domain 5"}, {"id": "GF1", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "Before running any experiments, your team needs a reusable, versioned definition of the Python packages and dependencies a training job requires. What should you create?", "options": [{"label": "A", "text": "An environment in the Machine Learning workspace"}, {"label": "B", "text": "A datastore"}, {"label": "C", "text": "A compute cluster"}, {"label": "D", "text": "A resource lock"}], "correct": ["A"], "explanation": "This is explicitly \"create and manage environments\" \u2014 a distinct workspace asset from datastores (which reference storage) or data assets (which reference data). B, C, D don't define reusable dependency/runtime configurations."}, {"id": "GF2", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "Your team wants to package a reusable, versioned data-preprocessing step that multiple training pipelines can reference without duplicating code. What should you create?", "options": [{"label": "A", "text": "A component in the Machine Learning workspace"}, {"label": "B", "text": "A datastore"}, {"label": "C", "text": "A registry with no components"}, {"label": "D", "text": "A DNS zone"}], "correct": ["A"], "explanation": "This is explicitly \"create and manage components\" \u2014 reusable, versioned pipeline building blocks. B references storage, not logic; C is the sharing mechanism, not the asset itself; D is unrelated."}, {"id": "GF3", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "After deploying a model to a real-time endpoint, requests are intermittently failing. What should you do to diagnose the issue?", "options": [{"label": "A", "text": "Test and troubleshoot the model endpoint"}, {"label": "B", "text": "Immediately delete and redeploy with no investigation"}, {"label": "C", "text": "Ignore intermittent failures"}, {"label": "D", "text": "Roll back with no root-cause analysis"}], "correct": ["A"], "explanation": "This is explicitly \"test and troubleshoot model endpoints\" as its own lifecycle skill, distinct from initial deployment or ongoing drift monitoring. B, C, D skip diagnosis entirely."}, {"id": "GF4", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "You need production models to automatically trigger a retraining job once a defined performance or drift threshold is crossed, without manual intervention. What should you configure?", "options": [{"label": "A", "text": "Retraining or alert triggers tied to monitored thresholds"}, {"label": "B", "text": "A one-time manual retrain with no automation"}, {"label": "C", "text": "No response to threshold breaches"}, {"label": "D", "text": "A billing alert instead of a model-quality response"}], "correct": ["A"], "explanation": "This is explicitly \"configure retraining or alert triggers when thresholds are exceeded,\" building on drift/performance monitoring with an automated response. B, C, D don't close the loop between detection and action."}, {"id": "GF5", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "Your evaluation report shows a generative AI response is grounded and relevant, but reviewers say it reads awkwardly and loses the thread partway through. Which additional quality metrics should you check?", "options": [{"label": "A", "text": "Coherence and fluency"}, {"label": "B", "text": "Token cost only"}, {"label": "C", "text": "Network latency only"}, {"label": "D", "text": "Storage redundancy tier"}], "correct": ["A"], "explanation": "Groundedness and relevance measure factual grounding and query fit; coherence measures logical flow and fluency measures naturalness of language \u2014 both explicitly listed alongside groundedness and relevance under \"implement AI quality metrics.\" B, C, D don't measure output quality."}, {"id": "GF6", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "During a production incident, you need step-by-step visibility into exactly what a generative AI request did internally, down to individual calls and errors, to debug the failure. What should you configure?", "options": [{"label": "A", "text": "Detailed logging, tracing, and debugging capabilities for production troubleshooting"}, {"label": "B", "text": "A single high-level uptime percentage with no detail"}, {"label": "C", "text": "A budget report"}, {"label": "D", "text": "A resource tag"}], "correct": ["A"], "explanation": "This is explicitly \"configure detailed logging, tracing, and debugging capabilities for production troubleshooting\" \u2014 deeper than general continuous monitoring, aimed at incident-level diagnosis. B, C, D don't provide the granularity needed to debug a specific failure."}];
+const DIAGRAMS = [{"id": "rag_pipeline", "title": "Retrieval-augmented generation (RAG) pipeline", "caption": "The standard ingest \u2192 chunk \u2192 embed \u2192 index \u2192 retrieve \u2192 augment \u2192 generate flow that grounds a model's response in your own data, reducing hallucination.", "svg": "<svg viewBox=\"0 0 760 322\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;max-width:760px;\">\n<rect x=\"0\" y=\"0\" width=\"760\" height=\"322\" fill=\"white\"/>\n\n<defs>\n  <marker id=\"arrowend\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\" markerUnits=\"strokeWidth\">\n    <path d=\"M0,0 L0,6 L9,3 z\" fill=\"#605e5c\"/>\n  </marker>\n</defs>\n\n<text x=\"380.0\" y=\"26\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#005a9e\" font-family=\"Segoe UI, Arial, sans-serif\">Retrieval-Augmented Generation (RAG) Pipeline</text>\n\n<g transform=\"translate(0,40)\">\n<rect x=\"20\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f3f2f1\" stroke=\"#c8c6c4\" stroke-width=\"1.6\"/>\n<text x=\"75.0\" y=\"118.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Source content</text>\n<text x=\"75.0\" y=\"134.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Docs, images, audio</text>\n<line x1=\"130\" y1=\"120\" x2=\"175\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"134.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"152.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">OCR/ingest</text>\n<rect x=\"175\" y=\"90\" width=\"100\" height=\"60\" rx=\"8\" fill=\"#eff6fc\" stroke=\"#0078d4\" stroke-width=\"1.6\"/>\n<text x=\"225.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Chunk + embed</text>\n<line x1=\"275\" y1=\"120\" x2=\"320\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"320\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f2edf9\" stroke=\"#5c2d91\" stroke-width=\"1.6\"/>\n<text x=\"375.0\" y=\"111.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Vector / hybrid</text>\n<text x=\"375.0\" y=\"125.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">index</text>\n<text x=\"375.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">e.g., Azure AI</text>\n<text x=\"375.0\" y=\"153.5\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Search</text>\n<line x1=\"430\" y1=\"120\" x2=\"475\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"434.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"452.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">retrieve</text>\n<rect x=\"475\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"530.0\" y=\"117.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Top-k relevant</text>\n<text x=\"530.0\" y=\"131.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">chunks</text>\n<line x1=\"585\" y1=\"120\" x2=\"630\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"589.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"607.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">augment prompt</text>\n<rect x=\"630\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#fff4ce\" stroke=\"#b25000\" stroke-width=\"1.6\"/>\n<text x=\"685.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">LLM generates</text>\n<path d=\"M 685 90 Q 760 60 685 40\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\" stroke-dasharray=\"6,4\" marker-end=\"url(#arrowend)\"/>\n<text x=\"700\" y=\"30\" text-anchor=\"end\" font-size=\"10.5\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Grounded, cited response</text>\n<text x=\"380\" y=\"200\" text-anchor=\"middle\" font-size=\"11\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">The query is embedded the same way as the documents, so retrieval finds semantically</text>\n<text x=\"380\" y=\"216\" text-anchor=\"middle\" font-size=\"11\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">similar chunks even without exact keyword matches \u2014 this is what \"grounds\" the response.</text>\n\n</g>\n<text x=\"380.0\" y=\"314\" text-anchor=\"middle\" font-size=\"9.5\" fill=\"#605e5c\" font-style=\"italic\" font-family=\"Segoe UI, Arial, sans-serif\">Source: Microsoft Learn \u2014 RAG pattern using Azure AI Search + Azure OpenAI</text>\n\n</svg>"}, {"id": "mlops_lifecycle", "title": "MLOps model lifecycle", "caption": "The train \u2192 register \u2192 deploy \u2192 monitor \u2192 retrain loop that AI-300's \"implement machine learning model lifecycle and operations\" domain is built around.", "svg": "<svg viewBox=\"0 0 760 322\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;max-width:760px;\">\n<rect x=\"0\" y=\"0\" width=\"760\" height=\"322\" fill=\"white\"/>\n\n<defs>\n  <marker id=\"arrowend\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\" markerUnits=\"strokeWidth\">\n    <path d=\"M0,0 L0,6 L9,3 z\" fill=\"#605e5c\"/>\n  </marker>\n</defs>\n\n<text x=\"380.0\" y=\"26\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#005a9e\" font-family=\"Segoe UI, Arial, sans-serif\">MLOps Model Lifecycle</text>\n\n<g transform=\"translate(0,40)\">\n<rect x=\"20\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f3f2f1\" stroke=\"#c8c6c4\" stroke-width=\"1.6\"/>\n<text x=\"75.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Data assets</text>\n<line x1=\"130\" y1=\"120\" x2=\"175\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"175\" y=\"90\" width=\"120\" height=\"60\" rx=\"8\" fill=\"#eff6fc\" stroke=\"#0078d4\" stroke-width=\"1.6\"/>\n<text x=\"235.0\" y=\"117.0\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Train + track</text>\n<text x=\"235.0\" y=\"130.5\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">(MLflow)</text>\n<line x1=\"295\" y1=\"120\" x2=\"340\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"340\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f2edf9\" stroke=\"#5c2d91\" stroke-width=\"1.6\"/>\n<text x=\"395.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Register model</text>\n<line x1=\"450\" y1=\"120\" x2=\"495\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"495\" y=\"90\" width=\"130\" height=\"60\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"560.0\" y=\"117.0\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Deploy (real-time /</text>\n<text x=\"560.0\" y=\"130.5\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">batch)</text>\n<line x1=\"625\" y1=\"120\" x2=\"670\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"670\" y=\"90\" width=\"80\" height=\"60\" rx=\"8\" fill=\"#fff4ce\" stroke=\"#b25000\" stroke-width=\"1.6\"/>\n<text x=\"710.0\" y=\"117.0\" text-anchor=\"middle\" font-size=\"10\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Monitor</text>\n<text x=\"710.0\" y=\"130.0\" text-anchor=\"middle\" font-size=\"10\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">(drift)</text>\n<path d=\"M 700 150 Q 240 235 700 210\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<line x1=\"240\" y1=\"235\" x2=\"80\" y2=\"150\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<text x=\"380\" y=\"235\" text-anchor=\"middle\" font-size=\"10.5\"  font-style=\"italic\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">retrain when drift/threshold triggers fire</text>\n\n</g>\n<text x=\"380.0\" y=\"314\" text-anchor=\"middle\" font-size=\"9.5\" fill=\"#605e5c\" font-style=\"italic\" font-family=\"Segoe UI, Arial, sans-serif\">Source: Microsoft Learn \u2014 Azure Machine Learning MLOps concepts</text>\n\n</svg>"}, {"id": "cicd_pipeline", "title": "CI/CD pipeline for infrastructure and model deployment", "caption": "The repeatable path from a Git commit to a validated production deployment using GitHub Actions and Bicep/Azure CLI, with an evaluation gate before promotion.", "svg": "<svg viewBox=\"0 0 720 262\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;max-width:720px;\">\n<rect x=\"0\" y=\"0\" width=\"720\" height=\"262\" fill=\"white\"/>\n\n<defs>\n  <marker id=\"arrowend\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\" markerUnits=\"strokeWidth\">\n    <path d=\"M0,0 L0,6 L9,3 z\" fill=\"#605e5c\"/>\n  </marker>\n</defs>\n\n<text x=\"360.0\" y=\"26\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#005a9e\" font-family=\"Segoe UI, Arial, sans-serif\">Automated IaC Deployment Pipeline</text>\n\n<g transform=\"translate(0,40)\">\n<rect x=\"20\" y=\"60\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f3f2f1\" stroke=\"#c8c6c4\" stroke-width=\"1.6\"/>\n<text x=\"75.0\" y=\"94.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Git repository</text>\n<line x1=\"130\" y1=\"90\" x2=\"175\" y2=\"90\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"134.05\" y=\"77.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"152.5\" y=\"91.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">push / PR merge</text>\n<rect x=\"175\" y=\"60\" width=\"130\" height=\"60\" rx=\"8\" fill=\"#eff6fc\" stroke=\"#0078d4\" stroke-width=\"1.6\"/>\n<text x=\"240.0\" y=\"87.0\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">GitHub Actions</text>\n<text x=\"240.0\" y=\"100.5\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">workflow</text>\n<line x1=\"305\" y1=\"90\" x2=\"350\" y2=\"90\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"309.05\" y=\"77.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"327.5\" y=\"91.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">deploy</text>\n<rect x=\"350\" y=\"60\" width=\"130\" height=\"60\" rx=\"8\" fill=\"#f2edf9\" stroke=\"#5c2d91\" stroke-width=\"1.6\"/>\n<text x=\"415.0\" y=\"87.0\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Bicep / Azure CLI</text>\n<text x=\"415.0\" y=\"100.5\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">provisioning</text>\n<line x1=\"480\" y1=\"90\" x2=\"525\" y2=\"90\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"486.74\" y=\"77.5\" width=\"31.520000000000003\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"502.5\" y=\"91.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">gate</text>\n<rect x=\"525\" y=\"60\" width=\"90\" height=\"60\" rx=\"8\" fill=\"#fff4ce\" stroke=\"#b25000\" stroke-width=\"1.6\"/>\n<text x=\"570.0\" y=\"87.0\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Evaluation</text>\n<text x=\"570.0\" y=\"100.5\" text-anchor=\"middle\" font-size=\"10.5\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">gate</text>\n<line x1=\"615\" y1=\"90\" x2=\"660\" y2=\"90\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"660\" y=\"60\" width=\"45\" height=\"60\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"682.5\" y=\"94.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Prod</text>\n\n</g>\n<text x=\"360.0\" y=\"254\" text-anchor=\"middle\" font-size=\"9.5\" fill=\"#605e5c\" font-style=\"italic\" font-family=\"Segoe UI, Arial, sans-serif\">Source: Microsoft Learn \u2014 GitHub Actions for Azure + Bicep deployment</text>\n\n</svg>"}];
+
+// Some mobile browsers throw when a page is opened via file:// (or in an
+// in-app/private browser) and script touches localStorage. Wrap every access
+// so a blocked storage API degrades to in-memory state instead of crashing
+// the whole script (which would otherwise leave the question view blank).
+const memoryStore = {};
+let storageBlocked = false;
+function safeGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { storageBlocked = true; return memoryStore[key] || null; }
+}
+function safeSet(key, val) {
+  try { localStorage.setItem(key, val); } catch (e) { storageBlocked = true; memoryStore[key] = val; }
+}
+
+let state = {
+  order: [],
+  idx: 0,
+  answered: (() => { try { return JSON.parse(safeGet('quiz_progress_' + EXAM_CODE) || '{}'); } catch (e) { return {}; } })(),
+  filterDomain: 'all',
+  filterFormat: 'all',
+  shuffle: false,
+  reviewMode: false,
+  currentSelection: [],
+  locked: false,
+};
+
+function saveProgress() {
+  safeSet('quiz_progress_' + EXAM_CODE, JSON.stringify(state.answered));
+}
+
+function uniqueDomains() {
+  const seen = [];
+  QUESTIONS.forEach(q => { if (!seen.includes(q.domain)) seen.push(q.domain); });
+  return seen;
+}
+
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildOrder() {
+  let list = QUESTIONS.filter(q =>
+    (state.filterDomain === 'all' || q.domain === state.filterDomain) &&
+    (state.filterFormat === 'all' || q.format === state.filterFormat)
+  );
+  if (state.reviewMode) {
+    list = list.filter(q => state.answered[q.id] && state.answered[q.id].correct === false);
+  }
+  if (state.shuffle) list = shuffleArr(list);
+  state.order = list;
+  state.idx = 0;
+}
+
+function initFilters() {
+  const domSel = document.getElementById('domainFilter');
+  domSel.innerHTML = '<option value="all">All domains</option>' +
+    uniqueDomains().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  domSel.addEventListener('change', () => { state.filterDomain = domSel.value; buildOrder(); render(); });
+  document.getElementById('formatFilter').addEventListener('change', (e) => { state.filterFormat = e.target.value; buildOrder(); render(); });
+  document.getElementById('shuffleToggle').addEventListener('change', (e) => { state.shuffle = e.target.checked; buildOrder(); render(); });
+  document.getElementById('reviewToggle').addEventListener('change', (e) => { state.reviewMode = e.target.checked; buildOrder(); render(); });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('Reset all saved progress for this exam?')) {
+      state.answered = {}; saveProgress(); buildOrder(); render();
+    }
+  });
+  document.getElementById('prevBtn').addEventListener('click', () => { if (state.idx > 0) { state.idx--; render(); } });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (state.idx < state.order.length - 1) { state.idx++; render(); } else { showSummary(); }
+  });
+  document.getElementById('checkBtn').addEventListener('click', checkMulti);
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    document.getElementById('summary').classList.remove('show');
+    document.getElementById('card').style.display = 'block';
+    document.querySelector('.controls').style.display = 'flex';
+    state.idx = 0; render();
+  });
+}
+
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+function formatLabel(f) { return {single:'Single-answer', multi:'Multi-select', case:'Case study'}[f] || f; }
+
+function render() {
+  document.getElementById('card').style.display = 'block';
+  document.getElementById('summary').classList.remove('show');
+  if (state.order.length === 0) {
+    document.getElementById('qtext').textContent = 'No questions match the current filters.';
+    document.getElementById('options').innerHTML = '';
+    document.getElementById('bgBox').style.display = 'none';
+    document.getElementById('feedback').className = '';
+    updateStats();
+    return;
+  }
+  if (state.idx >= state.order.length) state.idx = state.order.length - 1;
+  const q = state.order[state.idx];
+  const prior = state.answered[q.id];
+
+  document.getElementById('bDomain').textContent = q.domain;
+  document.getElementById('bFormat').textContent = formatLabel(q.format) + (q.format === 'multi' ? ` (select ${q.select_n})` : '');
+  document.getElementById('qtext').textContent = q.question;
+
+  const bg = document.getElementById('bgBox');
+  if (q.format === 'case' && q.case_background) {
+    bg.style.display = 'block';
+    bg.innerHTML = '<b>Scenario background:</b> ' + escapeHtml(q.case_background);
+  } else {
+    bg.style.display = 'none';
+  }
+
+  state.currentSelection = prior ? prior.selected.slice() : [];
+  state.locked = !!prior;
+
+  const optsDiv = document.getElementById('options');
+  optsDiv.innerHTML = '';
+  q.options.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.dataset.label = opt.label;
+    const isMulti = q.format === 'multi';
+    div.innerHTML = (isMulti ? `<input type="checkbox" ${state.currentSelection.includes(opt.label)?'checked':''}>` : '') +
+      `<span class="letter">${opt.label})</span><span>${escapeHtml(opt.text)}</span>`;
+    if (!isMulti) {
+      div.addEventListener('click', () => selectSingle(q, opt.label));
+    } else {
+      div.addEventListener('click', (e) => {
+        if (state.locked) return;
+        toggleMulti(opt.label);
+        render();
+      });
+    }
+    optsDiv.appendChild(div);
+  });
+
+  document.getElementById('checkBtn').style.display = (q.format === 'multi' && !state.locked) ? 'inline-block' : 'none';
+  document.getElementById('multiHint').style.display = (q.format === 'multi' && !state.locked) ? 'block' : 'none';
+  document.getElementById('multiHint').textContent = `Select exactly ${q.select_n} option(s), then click Check Answer.`;
+
+  const fb = document.getElementById('feedback');
+  if (prior) {
+    applyFeedbackStyles(q, prior.selected);
+    showFeedback(q, prior.correct);
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    document.getElementById('checkBtn').style.display = 'none';
+  } else {
+    fb.className = ''; fb.innerHTML = '';
+    document.getElementById('nextBtn').style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = state.idx === 0;
+  updateStats();
+}
+
+function toggleMulti(label) {
+  const i = state.currentSelection.indexOf(label);
+  if (i >= 0) state.currentSelection.splice(i, 1);
+  else state.currentSelection.push(label);
+}
+
+function selectSingle(q, label) {
+  if (state.locked) return;
+  const correctSet = q.correct;
+  const isCorrect = correctSet.length === 1 && correctSet[0] === label;
+  state.answered[q.id] = { selected: [label], correct: isCorrect };
+  saveProgress();
+  render();
+}
+
+function checkMulti() {
+  const q = state.order[state.idx];
+  const sel = state.currentSelection.slice().sort();
+  const correct = q.correct.slice().sort();
+  const isCorrect = sel.length === correct.length && sel.every((v, i) => v === correct[i]);
+  state.answered[q.id] = { selected: sel, correct: isCorrect };
+  saveProgress();
+  render();
+}
+
+function applyFeedbackStyles(q, selected) {
+  const opts = document.querySelectorAll('#options .opt');
+  opts.forEach(div => {
+    const label = div.dataset.label;
+    div.classList.add('locked');
+    const isCorrectOpt = q.correct.includes(label);
+    const wasSelected = selected.includes(label);
+    if (isCorrectOpt && wasSelected) div.classList.add('correct');
+    else if (isCorrectOpt && !wasSelected) div.classList.add('missed');
+    else if (!isCorrectOpt && wasSelected) div.classList.add('incorrect');
+    const cb = div.querySelector('input[type=checkbox]');
+    if (cb) cb.disabled = true;
+  });
+}
+
+function showFeedback(q, isCorrect) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  const correctText = q.correct.map(l => {
+    const o = q.options.find(o => o.label === l);
+    return `${l}) ${o ? o.text : ''}`;
+  }).join('; ');
+  fb.innerHTML = `<div class="fb-title ${isCorrect ? 'ok' : 'bad'}">${isCorrect ? '✓ Correct!' : '✗ Not quite.'}</div>` +
+    `<div><b>Correct answer${q.correct.length>1?'s':''}:</b> ${escapeHtml(correctText)}</div>` +
+    `<div style="margin-top:8px;">${escapeHtml(q.explanation)}</div>`;
+}
+
+function updateStats() {
+  const answeredIds = Object.keys(state.answered);
+  const totalAnswered = answeredIds.length;
+  const totalCorrect = answeredIds.filter(id => state.answered[id].correct).length;
+  document.getElementById('stAnswered').textContent = totalAnswered;
+  document.getElementById('stCorrect').textContent = totalCorrect;
+  document.getElementById('stAccuracy').textContent = totalAnswered ? Math.round(100*totalCorrect/totalAnswered) + '%' : '—';
+  document.getElementById('stRemaining').textContent = Math.max(0, state.order.length - state.idx - (state.answered[state.order[state.idx] && state.order[state.idx].id] ? 1 : 0));
+  const pct = state.order.length ? Math.round(100 * (state.idx + (state.answered[state.order[state.idx] && state.order[state.idx].id]?1:0)) / state.order.length) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function showSummary() {
+  document.getElementById('card').style.display = 'none';
+  const s = document.getElementById('summary');
+  s.classList.add('show');
+  const ids = Object.keys(state.answered);
+  const total = ids.length;
+  const correct = ids.filter(id => state.answered[id].correct).length;
+  document.getElementById('summaryLine').textContent =
+    `You've answered ${total} question(s) so far in this session, ${correct} correct (${total?Math.round(100*correct/total):0}%).`;
+  const byDomain = {};
+  QUESTIONS.forEach(q => {
+    if (!state.answered[q.id]) return;
+    byDomain[q.domain] = byDomain[q.domain] || {c:0,t:0};
+    byDomain[q.domain].t++;
+    if (state.answered[q.id].correct) byDomain[q.domain].c++;
+  });
+  const bd = document.getElementById('domainBreakdown');
+  bd.innerHTML = Object.keys(byDomain).map(d => {
+    const {c,t} = byDomain[d];
+    return `<div class="domainrow"><span>${escapeHtml(d)}</span><span>${c}/${t} (${Math.round(100*c/t)}%)</span></div>`;
+  }).join('') || '<p>No questions answered yet.</p>';
+}
+
+function renderDiagrams() {
+  const gal = document.getElementById('diagramGallery');
+  gal.innerHTML = DIAGRAMS.map(d => `
+    <div class="diagram-card">
+      <h3>${escapeHtml(d.title)}</h3>
+      <div class="cap">${escapeHtml(d.caption)}</div>
+      <div class="svgwrap">${d.svg}</div>
+    </div>
+  `).join('') || '<p>No diagrams for this exam yet.</p>';
+}
+
+function initTabs() {
+  const quizBtn = document.getElementById('tabQuizBtn');
+  const diagBtn = document.getElementById('tabDiagramBtn');
+  const gameBtn = document.getElementById('tabGameBtn');
+  const quizView = document.getElementById('quizView');
+  const diagView = document.getElementById('diagramView');
+  const gameView = document.getElementById('gameView');
+  const all = [[quizBtn, quizView], [diagBtn, diagView], [gameBtn, gameView]];
+  function activate(target) {
+    all.forEach(([btn, view]) => {
+      const on = btn === target;
+      btn.classList.toggle('active', on);
+      view.style.display = on ? 'block' : 'none';
+    });
+  }
+  quizBtn.addEventListener('click', () => activate(quizBtn));
+  diagBtn.addEventListener('click', () => activate(diagBtn));
+  gameBtn.addEventListener('click', () => activate(gameBtn));
+}
+
+// =================================================================
+// DOMAIN MASTERY CHALLENGE — game engine
+// Pure logic functions (no DOM access) are kept separate from the
+// DOM-driving functions below so they can be unit-tested in isolation.
+// =================================================================
+
+// Only single/multi questions tagged with a real skills-measured domain
+// (excludes "Gap-Fill Supplement" and case-study titles, which aren't
+// official exam domains) are eligible for the game.
+const GAME_POOL = QUESTIONS.filter(q => (q.format === 'single' || q.format === 'multi') && /^Domain \d+:/.test(q.domain));
+const GAME_DOMAINS = [...new Set(GAME_POOL.map(q => q.domain))];
+const MASTERY_KEY = 'game_mastery_' + EXAM_CODE;
+const TIME_PER_Q = 30;
+const MASTERY_THRESHOLD = 0.8;
+const MASTERY_MIN_ATTEMPTS = 8;
+
+function loadMastery() {
+  try { return JSON.parse(safeGet(MASTERY_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveMastery(m) { safeSet(MASTERY_KEY, JSON.stringify(m)); }
+
+// Weight is highest for domains never attempted (to guarantee early
+// coverage of every domain) and falls as accuracy rises, so weaker
+// domains are served more often — the same weak-spot-first principle
+// spaced-repetition tools use. Floor of 0.4 keeps mastered domains from
+// disappearing entirely (occasional retention checks).
+function domainWeight(entry) {
+  const acc = (!entry || entry.total === 0) ? 0.5 : entry.correct / entry.total;
+  return Math.max(0.4, 0.4 + (1 - acc) * 3);
+}
+
+function pickWeightedQuestion(pool, mastery, excludeIds) {
+  const avail = pool.filter(q => !excludeIds.has(q.id));
+  if (avail.length === 0) return null;
+  const weights = avail.map(q => domainWeight(mastery[q.domain]));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < avail.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return avail[i];
+  }
+  return avail[avail.length - 1];
+}
+
+function isAnswerCorrect(selected, correct) {
+  const s = selected.slice().sort();
+  const c = correct.slice().sort();
+  return s.length === c.length && s.every((v, i) => v === c[i]);
+}
+
+function updateMasteryObj(mastery, domain, isCorrect) {
+  mastery[domain] = mastery[domain] || { correct: 0, total: 0 };
+  mastery[domain].total += 1;
+  if (isCorrect) mastery[domain].correct += 1;
+  return mastery;
+}
+
+function scoreForAnswer(streakBefore, isCorrect) {
+  if (!isCorrect) return { points: 0, newStreak: 0 };
+  const multiplier = 1 + Math.min(streakBefore, 5) * 0.2;
+  return { points: Math.round(100 * multiplier), newStreak: streakBefore + 1 };
+}
+
+function masteryStatus(entry) {
+  if (!entry || entry.total === 0) return 'new';
+  const acc = entry.correct / entry.total;
+  if (acc >= MASTERY_THRESHOLD && entry.total >= MASTERY_MIN_ATTEMPTS) return 'mastered';
+  return 'learning';
+}
+
+// ---- DOM-driving layer ----
+
+let game = null; // set on Start Round
+
+function renderMasteryList(containerId) {
+  const mastery = loadMastery();
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (GAME_DOMAINS.length === 0) { el.innerHTML = '<p>No domain-tagged questions available for this exam yet.</p>'; return; }
+  el.innerHTML = GAME_DOMAINS.map(d => {
+    const entry = mastery[d];
+    const acc = entry && entry.total ? Math.round(100 * entry.correct / entry.total) : 0;
+    const status = masteryStatus(entry);
+    const barColor = status === 'mastered' ? 'var(--green)' : (status === 'learning' ? 'var(--amber)' : 'var(--border)');
+    const badgeText = status === 'mastered' ? 'Mastered' : (status === 'learning' ? 'Learning' : 'Not started');
+    return `<div class="mastery-row">
+      <span class="dname">${escapeHtml(d)}</span>
+      <span class="mastery-badge ${status}">${badgeText}</span>
+      <div class="mastery-bar"><div style="width:${acc}%;background:${barColor};"></div></div>
+      <span class="mastery-pct">${entry ? entry.correct + '/' + entry.total : '0/0'}</span>
+    </div>`;
+  }).join('');
+}
+
+function startGame() {
+  if (GAME_POOL.length === 0) return;
+  game = {
+    lives: 3, score: 0, streak: 0, bestStreak: 0, seen: 0,
+    excludeIds: new Set(), mastery: loadMastery(),
+    currentQ: null, selection: [], locked: false, timeLeft: TIME_PER_Q, timerHandle: null,
+  };
+  document.getElementById('gameStart').style.display = 'none';
+  document.getElementById('gameOver').style.display = 'none';
+  document.getElementById('gamePlay').style.display = 'block';
+  nextGameQuestion();
+}
+
+function endGame(reason) {
+  clearInterval(game.timerHandle);
+  saveMastery(game.mastery);
+  document.getElementById('gamePlay').style.display = 'none';
+  document.getElementById('gameOver').style.display = 'block';
+  document.getElementById('gOverTitle').textContent = reason === 'cleared' ? 'Pool Cleared!' : 'Round Complete';
+  document.getElementById('gOverLine').textContent =
+    `Final score: ${game.score} · Questions seen: ${game.seen} · Best streak: ${game.bestStreak}`;
+  renderMasteryList('gOverMastery');
+}
+
+function nextGameQuestion() {
+  const q = pickWeightedQuestion(GAME_POOL, game.mastery, game.excludeIds);
+  if (!q) { endGame('cleared'); return; }
+  game.currentQ = q;
+  game.excludeIds.add(q.id);
+  game.selection = [];
+  game.locked = false;
+  game.timeLeft = TIME_PER_Q;
+
+  document.getElementById('gDomain').textContent = q.domain;
+  document.getElementById('gFormat').textContent = formatLabel(q.format) + (q.format === 'multi' ? ` (select ${q.select_n})` : '');
+  document.getElementById('gQtext').textContent = q.question;
+
+  const optsDiv = document.getElementById('gOptions');
+  optsDiv.innerHTML = '';
+  q.options.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.dataset.label = opt.label;
+    const isMulti = q.format === 'multi';
+    div.innerHTML = (isMulti ? `<input type="checkbox">` : '') +
+      `<span class="letter">${opt.label})</span><span>${escapeHtml(opt.text)}</span>`;
+    div.addEventListener('click', () => {
+      if (game.locked) return;
+      if (isMulti) {
+        const i = game.selection.indexOf(opt.label);
+        if (i >= 0) game.selection.splice(i, 1); else game.selection.push(opt.label);
+        const cb = div.querySelector('input[type=checkbox]');
+        if (cb) cb.checked = game.selection.includes(opt.label);
+      } else {
+        game.selection = [opt.label];
+        submitGameAnswer();
+      }
+    });
+    optsDiv.appendChild(div);
+  });
+
+  document.getElementById('gCheckBtn').style.display = q.format === 'multi' ? 'inline-block' : 'none';
+  document.getElementById('gMultiHint').style.display = q.format === 'multi' ? 'block' : 'none';
+  document.getElementById('gMultiHint').textContent = `Select exactly ${q.select_n} option(s), then click Check Answer.`;
+  document.getElementById('gContinueBtn').style.display = 'none';
+  document.getElementById('gFeedback').className = '';
+  document.getElementById('gFeedback').innerHTML = '';
+
+  updateGameStatbar();
+  startGameTimer();
+}
+
+function startGameTimer() {
+  clearInterval(game.timerHandle);
+  updateTimerBar();
+  game.timerHandle = setInterval(() => {
+    game.timeLeft -= 1;
+    updateTimerBar();
+    if (game.timeLeft <= 0) {
+      clearInterval(game.timerHandle);
+      submitGameAnswer(true);
+    }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = Math.max(0, Math.round(100 * game.timeLeft / TIME_PER_Q));
+  const fill = document.getElementById('gTimerFill');
+  fill.style.width = pct + '%';
+  document.getElementById('gTimerBar').classList.toggle('low', game.timeLeft <= 10);
+}
+
+function submitGameAnswer(timedOut) {
+  if (game.locked) return;
+  game.locked = true;
+  clearInterval(game.timerHandle);
+  const q = game.currentQ;
+  const isCorrect = !timedOut && game.selection.length > 0 && isAnswerCorrect(game.selection, q.correct);
+  updateMasteryObj(game.mastery, q.domain, isCorrect);
+  const { points, newStreak } = scoreForAnswer(game.streak, isCorrect);
+  game.score += points;
+  game.streak = newStreak;
+  game.bestStreak = Math.max(game.bestStreak, game.streak);
+  game.seen += 1;
+  if (!isCorrect) game.lives -= 1;
+
+  const opts = document.querySelectorAll('#gOptions .opt');
+  opts.forEach(div => {
+    const label = div.dataset.label;
+    const isCorrectOpt = q.correct.includes(label);
+    const wasSelected = game.selection.includes(label);
+    if (isCorrectOpt && wasSelected) div.classList.add('correct');
+    else if (isCorrectOpt && !wasSelected) div.classList.add('missed');
+    else if (!isCorrectOpt && wasSelected) div.classList.add('incorrect');
+    const cb = div.querySelector('input[type=checkbox]');
+    if (cb) cb.disabled = true;
+  });
+
+  const correctText = q.correct.map(l => {
+    const o = q.options.find(o => o.label === l);
+    return `${l}) ${o ? o.text : ''}`;
+  }).join('; ');
+  const fb = document.getElementById('gFeedback');
+  fb.className = 'show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  const titleText = timedOut ? '⏱ Time\'s up!' : (isCorrect ? '✓ Correct!' : '✗ Not quite.');
+  const streakNote = isCorrect && newStreak >= 2 ? ` <span class="streakflash">+${points} pts (streak ${newStreak}!)</span>` : (isCorrect ? ` <span class="streakflash">+${points} pts</span>` : '');
+  fb.innerHTML = `<div class="fb-title ${isCorrect ? 'ok' : 'bad'}">${titleText}${streakNote}</div>` +
+    `<div><b>Correct answer${q.correct.length > 1 ? 's' : ''}:</b> ${escapeHtml(correctText)}</div>` +
+    `<div style="margin-top:8px;">${escapeHtml(q.explanation)}</div>`;
+
+  document.getElementById('gCheckBtn').style.display = 'none';
+  document.getElementById('gContinueBtn').style.display = 'inline-block';
+  updateGameStatbar();
+
+  if (game.lives <= 0) {
+    document.getElementById('gContinueBtn').onclick = () => endGame('outoflives');
+  } else {
+    document.getElementById('gContinueBtn').onclick = () => nextGameQuestion();
+  }
+}
+
+function updateGameStatbar() {
+  document.getElementById('gLives').innerHTML = '❤️'.repeat(Math.max(0, game.lives)) + '<span class="lost">' + '🖤'.repeat(Math.max(0, 3 - game.lives)) + '</span>';
+  document.getElementById('gScore').textContent = game.score;
+  document.getElementById('gStreak').textContent = game.streak;
+  document.getElementById('gSeen').textContent = game.seen;
+}
+
+function initGame() {
+  renderMasteryList('masteryPreview');
+  document.getElementById('startGameBtn').addEventListener('click', startGame);
+  document.getElementById('gCheckBtn').addEventListener('click', () => submitGameAnswer(false));
+  document.getElementById('playAgainBtn').addEventListener('click', () => {
+    document.getElementById('gameOver').style.display = 'none';
+    document.getElementById('gameStart').style.display = 'block';
+    renderMasteryList('masteryPreview');
+  });
+  document.getElementById('resetMasteryBtn').addEventListener('click', () => {
+    if (confirm('Reset all Domain Mastery Challenge progress for this exam?')) {
+      saveMastery({});
+      renderMasteryList('masteryPreview');
+      renderMasteryList('gOverMastery');
+    }
+  });
+  if (GAME_POOL.length === 0) {
+    document.getElementById('startGameBtn').disabled = true;
+    document.getElementById('startGameBtn').textContent = 'No game questions available';
+  }
+}
+
+// Run each init phase independently: if one throws (e.g. an unexpected
+// browser quirk), the others still run instead of the whole page going
+// blank. Any failure is also surfaced visibly instead of failing silently,
+// so a broken phase is diagnosable instead of just looking "dead".
+function safeRun(label, fn) {
+  try { fn(); } catch (e) {
+    const banner = document.getElementById('jsErrorBanner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.textContent += (banner.textContent ? '\n' : '') + `[${label}] ${e.message}`;
+    }
+  }
+}
+
+safeRun('filters', initFilters);
+safeRun('tabs', initTabs);
+safeRun('diagrams', renderDiagrams);
+safeRun('game', initGame);
+safeRun('buildOrder', buildOrder);
+safeRun('render', render);
+if (storageBlocked) {
+  const w = document.getElementById('storageWarning');
+  if (w) w.style.display = 'block';
+}
+</script>
+</body>
+</html>

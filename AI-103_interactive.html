@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-103: Developing AI Apps and Agents on Azure — Interactive Practice</title>
+<style>
+:root {
+  --blue: #0078d4; --blue-dark: #005a9e; --green: #107c10; --green-bg: #dff6dd;
+  --red: #d13438; --red-bg: #fde7e9; --amber: #b25000; --amber-bg: #fff4ce;
+  --gray-bg: #f3f2f1; --border: #e1dfdd; --text: #201f1e; --text-light: #605e5c;
+}
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', -apple-system, Roboto, Helvetica, Arial, sans-serif; margin:0; background:#faf9f8; color:var(--text); }
+header { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; padding:20px 24px; }
+header h1 { margin:0 0 4px; font-size:1.4em; }
+header p { margin:0; opacity:0.9; font-size:0.9em; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+.statbar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.stat { background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px 16px; flex:1; min-width:120px; text-align:center; }
+.stat .num { font-size:1.5em; font-weight:600; color:var(--blue); }
+.stat .lbl { font-size:0.78em; color:var(--text-light); text-transform:uppercase; letter-spacing:0.03em; }
+.controls { background:#fff; border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.controls label { font-size:0.85em; color:var(--text-light); margin-right:4px; }
+.controls select, .controls button { font-family:inherit; font-size:0.88em; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+.controls button.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+.controls button.primary:hover { background:var(--blue-dark); }
+.controls button:hover { background:var(--gray-bg); }
+.controls .toggle { display:flex; align-items:center; gap:6px; }
+#card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:24px; }
+.badges { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.badge { font-size:0.72em; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; }
+.badge.domain { background:#eff6fc; color:var(--blue-dark); }
+.badge.format { background:var(--gray-bg); color:var(--text-light); }
+.bg-box { background:var(--gray-bg); border-left:3px solid var(--blue); padding:12px 14px; border-radius:6px; margin-bottom:16px; font-size:0.92em; line-height:1.5; }
+.bg-box b { color: var(--blue-dark); }
+#qtext { font-size:1.08em; font-weight:600; line-height:1.5; margin-bottom:18px; }
+.opt { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1.5px solid var(--border); border-radius:8px; margin-bottom:10px; cursor:pointer; transition: all .12s; }
+.opt:hover:not(.locked) { border-color:var(--blue); background:#f5faff; }
+.opt .letter { font-weight:700; min-width:20px; }
+.opt.selected { border-color:var(--blue); background:#eff6fc; }
+.opt.correct { border-color:var(--green); background:var(--green-bg); }
+.opt.incorrect { border-color:var(--red); background:var(--red-bg); }
+.opt.missed { border-color:var(--amber); background:var(--amber-bg); }
+.opt input[type=checkbox] { margin-top:3px; }
+#feedback { margin-top:6px; padding:14px 16px; border-radius:8px; font-size:0.92em; line-height:1.55; display:none; }
+#feedback.show { display:block; }
+#feedback.correct-fb { background:var(--green-bg); border:1px solid var(--green); }
+#feedback.incorrect-fb { background:var(--red-bg); border:1px solid var(--red); }
+#feedback .fb-title { font-weight:700; margin-bottom:6px; }
+#feedback .fb-title.ok { color:var(--green); }
+#feedback .fb-title.bad { color:var(--red); }
+.actions { display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+.actions button { font-family:inherit; font-size:0.95em; padding:9px 20px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+.actions button.primary { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:600; }
+.actions button.primary:hover { background:var(--blue-dark); }
+.actions button:disabled { opacity:0.4; cursor:not-allowed; }
+#summary { display:none; text-align:center; padding:30px 20px; }
+#summary.show { display:block; }
+#summary h2 { color:var(--blue-dark); }
+.progressbar { height:6px; background:var(--gray-bg); border-radius:3px; overflow:hidden; margin-bottom:16px; }
+.progressbar > div { height:100%; background:var(--blue); transition:width .2s; }
+.domainrow { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9em; }
+.hint { font-size:0.8em; color:var(--text-light); margin-top:2px; }
+footer { text-align:center; padding:20px; color:var(--text-light); font-size:0.8em; }
+.tabnav { display:flex; gap:6px; padding:0 12px; background:var(--blue-dark); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+.tabnav button { font-family:inherit; font-size:0.85em; padding:10px 14px; border:none; background:transparent; color:#cfe6f7; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; flex:0 0 auto; touch-action:manipulation; }
+.tabnav button.active { color:#fff; border-bottom-color:#fff; font-weight:600; }
+.tabnav button:hover { color:#fff; }
+#jsErrorBanner { display:none; background:#fde7e9; border:2px solid var(--red); color:#5c0009; padding:12px 16px; margin:14px 16px 0; border-radius:8px; font-size:0.82em; font-family:monospace; white-space:pre-wrap; word-break:break-word; }
+@media (max-width: 480px) {
+  .tabnav button { font-size:0.78em; padding:9px 11px; }
+  header h1 { font-size:1.15em; }
+  header p { font-size:0.82em; }
+  .wrap { padding:14px 10px 50px; }
+}
+#diagramView { display:none; }
+.diagram-card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+.diagram-card h3 { margin:0 0 4px; font-size:1.05em; color:var(--blue-dark); }
+.diagram-card .cap { font-size:0.88em; color:var(--text-light); margin-bottom:14px; line-height:1.5; }
+.diagram-card .svgwrap { overflow-x:auto; }
+.diagram-intro { font-size:0.88em; color:var(--text-light); margin-bottom:16px; line-height:1.5; }
+#gameView { display:none; }
+.game-intro { font-size:0.88em; color:var(--text-light); margin-bottom:16px; line-height:1.5; }
+.game-statbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.game-stat { background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px 14px; text-align:center; min-width:90px; }
+.game-stat .num { font-size:1.3em; font-weight:700; color:var(--blue); }
+.game-stat .lbl { font-size:0.7em; color:var(--text-light); text-transform:uppercase; letter-spacing:0.03em; }
+.lives { font-size:1.2em; letter-spacing:2px; }
+.lives .lost { opacity:0.25; }
+.timerbar { height:8px; background:var(--gray-bg); border-radius:4px; overflow:hidden; margin-bottom:16px; }
+.timerbar > div { height:100%; background:var(--green); transition:width 1s linear, background .3s; }
+.timerbar.low > div { background:var(--red); }
+#gameStart, #gameOver { text-align:center; padding:30px 16px; }
+#gameStart h2, #gameOver h2 { color:var(--blue-dark); }
+.mastery-list { text-align:left; max-width:520px; margin:0 auto; }
+.mastery-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:0.88em; }
+.mastery-row .dname { flex:1; }
+.mastery-bar { width:120px; height:8px; background:var(--gray-bg); border-radius:4px; overflow:hidden; }
+.mastery-bar > div { height:100%; }
+.mastery-pct { width:80px; text-align:right; font-weight:600; }
+.mastery-badge { font-size:0.68em; padding:2px 7px; border-radius:8px; font-weight:700; }
+.mastery-badge.mastered { background:var(--green-bg); color:var(--green); }
+.mastery-badge.learning { background:var(--amber-bg); color:var(--amber); }
+.mastery-badge.new { background:var(--gray-bg); color:var(--text-light); }
+#gameCard { background:#fff; border:1px solid var(--border); border-radius:10px; padding:24px; }
+.streakflash { font-weight:700; color:var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI-103: Developing AI Apps and Agents on Azure</h1>
+  <p>Interactive Practice — click an answer for instant feedback and full reasoning, right or wrong.</p>
+</header>
+<div class="tabnav">
+  <button id="tabQuizBtn" class="active">Practice Questions</button>
+  <button id="tabDiagramBtn">Diagram Reference (2)</button>
+  <button id="tabGameBtn">Domain Mastery Challenge</button>
+</div>
+<div id="jsErrorBanner"></div>
+<div class="wrap">
+  <div id="storageWarning" style="display:none;background:var(--amber-bg);border:1px solid var(--amber);color:#5c3a00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.85em;">Your browser is blocking saved progress on this file (common when a file is opened via a share/email link rather than saved and opened directly). The quiz still works fully — your answers just won't be remembered if you close and reopen the page.</div>
+  <div id="quizView">
+  <div class="statbar">
+    <div class="stat"><div class="num" id="stAnswered">0</div><div class="lbl">Answered</div></div>
+    <div class="stat"><div class="num" id="stCorrect">0</div><div class="lbl">Correct</div></div>
+    <div class="stat"><div class="num" id="stAccuracy">—</div><div class="lbl">Accuracy</div></div>
+    <div class="stat"><div class="num" id="stRemaining">0</div><div class="lbl">Remaining</div></div>
+  </div>
+  <div class="progressbar"><div id="progressFill" style="width:0%"></div></div>
+  <div class="controls">
+    <div><label for="domainFilter">Domain</label><br><select id="domainFilter"></select></div>
+    <div><label for="formatFilter">Format</label><br><select id="formatFilter">
+      <option value="all">All formats</option>
+      <option value="single">Single-answer</option>
+      <option value="multi">Multi-select</option>
+      <option value="case">Case study</option>
+    </select></div>
+    <div class="toggle"><input type="checkbox" id="shuffleToggle"><label for="shuffleToggle">Shuffle order</label></div>
+    <div class="toggle"><input type="checkbox" id="reviewToggle"><label for="reviewToggle">Review missed only</label></div>
+    <button id="resetBtn">Reset progress</button>
+  </div>
+
+  <div id="card">
+    <div class="badges">
+      <span class="badge domain" id="bDomain"></span>
+      <span class="badge format" id="bFormat"></span>
+    </div>
+    <div class="bg-box" id="bgBox" style="display:none"></div>
+    <div id="qtext"></div>
+    <div id="options"></div>
+    <div class="hint" id="multiHint" style="display:none"></div>
+    <div id="feedback"></div>
+    <div class="actions">
+      <button id="prevBtn">&larr; Previous</button>
+      <div>
+        <button id="checkBtn" class="primary" style="display:none">Check Answer</button>
+        <button id="nextBtn" class="primary" style="display:none">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary">
+    <h2>Session Complete</h2>
+    <p id="summaryLine"></p>
+    <div id="domainBreakdown"></div>
+    <button class="primary" id="restartBtn" style="margin-top:16px;padding:10px 22px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;">Review all questions again</button>
+  </div>
+
+  </div>
+
+  <div id="diagramView">
+    <p class="diagram-intro">Reference diagrams for the architectural and conceptual patterns behind this exam's scenario questions. Each has been checked against current official Microsoft Learn documentation — source noted under each diagram.</p>
+    <div id="diagramGallery"></div>
+  </div>
+
+  <div id="gameView">
+    <p class="game-intro">Timed speed-round drill pulled from the same question bank as Practice Questions. Wrong answers cost a life; correct answers build a streak. Your accuracy per domain is tracked across every session you play, and domains you're weaker in show up more often until you prove you've got them.</p>
+
+    <div id="gameStart">
+      <h2>Domain Mastery Challenge</h2>
+      <p style="color:var(--text-light);max-width:480px;margin:8px auto 20px;">3 lives. ~30 seconds per question. Score builds with your streak. The round ends when you run out of lives or clear the question pool.</p>
+      <div id="masteryPreview" class="mastery-list"></div>
+      <button class="primary" id="startGameBtn" style="margin-top:20px;padding:12px 28px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;font-size:1em;">Start Round</button>
+    </div>
+
+    <div id="gamePlay" style="display:none;">
+      <div class="game-statbar">
+        <div class="game-stat"><div class="num"><span id="gLives" class="lives"></span></div><div class="lbl">Lives</div></div>
+        <div class="game-stat"><div class="num" id="gScore">0</div><div class="lbl">Score</div></div>
+        <div class="game-stat"><div class="num" id="gStreak">0</div><div class="lbl">Streak</div></div>
+        <div class="game-stat"><div class="num" id="gSeen">0</div><div class="lbl">Seen</div></div>
+      </div>
+      <div class="timerbar" id="gTimerBar"><div id="gTimerFill" style="width:100%"></div></div>
+      <div id="gameCard">
+        <div class="badges">
+          <span class="badge domain" id="gDomain"></span>
+          <span class="badge format" id="gFormat"></span>
+        </div>
+        <div id="gQtext" style="font-size:1.08em;font-weight:600;line-height:1.5;margin-bottom:18px;"></div>
+        <div id="gOptions"></div>
+        <div class="hint" id="gMultiHint" style="display:none"></div>
+        <div id="gFeedback" style="margin-top:6px;padding:14px 16px;border-radius:8px;font-size:0.92em;line-height:1.55;display:none;"></div>
+        <div class="actions">
+          <div></div>
+          <div>
+            <button id="gCheckBtn" class="primary" style="display:none">Check Answer</button>
+            <button id="gContinueBtn" class="primary" style="display:none">Continue &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameOver">
+      <h2 id="gOverTitle">Round Complete</h2>
+      <p id="gOverLine" style="color:var(--text-light);"></p>
+      <div id="gOverMastery" class="mastery-list"></div>
+      <button class="primary" id="playAgainBtn" style="margin-top:16px;padding:10px 22px;border-radius:6px;border:none;color:#fff;background:var(--blue);cursor:pointer;">Play Again</button>
+      <button id="resetMasteryBtn" style="margin-top:16px;margin-left:8px;padding:10px 22px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;">Reset mastery data</button>
+    </div>
+  </div>
+
+  <footer>Progress is saved locally in this browser. Not affiliated with or endorsed by Microsoft.</footer>
+</div>
+
+<script>
+const EXAM_CODE = "AI-103";
+const QUESTIONS = [{"id": "Q1", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You need to select a Foundry service that lets your application ground its responses in your organization's private documents using semantic similarity rather than exact keyword matches. Which capability should you configure?", "options": [{"label": "A", "text": "Azure AI Content Understanding"}, {"label": "B", "text": "Vector search / vector index in Azure AI Search"}, {"label": "C", "text": "Azure AI Translator"}, {"label": "D", "text": "A prompt flow evaluator"}], "correct": ["B"], "explanation": "Semantic similarity grounding (finding documents that mean the same thing, not just matching keywords) is the core purpose of vector search/embeddings-based indexing. Content Understanding (A) extracts/structures content but doesn't itself perform semantic retrieval; Translator (C) converts language; an evaluator (D) measures quality, it doesn't retrieve."}, {"id": "Q2", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Your team needs a model for a lightweight, low-latency classification task that runs frequently and must minimize cost. Which model category is most appropriate?", "options": [{"label": "A", "text": "A large multimodal model"}, {"label": "B", "text": "A small language model (SLM)"}, {"label": "C", "text": "A code-generation model"}, {"label": "D", "text": "A speech-to-text model"}], "correct": ["B"], "explanation": "SLMs are purpose-built for low-latency, low-cost, high-frequency tasks like classification. Large multimodal models (A) are heavier and costlier for simple classification. Code models (C) and speech models (D) are specialized for different modalities entirely."}, {"id": "Q3", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You are designing the Azure infrastructure for an agent-based solution that must scale automatically and isolate compute per environment (dev/test/prod). Which approach best supports this requirement?", "options": [{"label": "A", "text": "A single shared Foundry project across all environments"}, {"label": "B", "text": "Separate Foundry projects/resources per environment with independent deployment pipelines"}, {"label": "C", "text": "One shared API key across all environments"}, {"label": "D", "text": "Manually redeploying the model each time an environment changes"}], "correct": ["B"], "explanation": "Environment isolation (dev/test/prod) with independent scaling and deployment is standard Azure AI solution architecture and directly maps to \"Design Azure infrastructure for AI apps.\" A shared project (A) or shared key (C) breaks isolation; manual redeployment (D) doesn't scale and isn't infrastructure design."}, {"id": "Q4", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which deployment option should you choose for a generative AI workload that has unpredictable, bursty traffic and where you want to avoid paying for idle reserved capacity?", "options": [{"label": "A", "text": "Provisioned throughput units (PTUs)"}, {"label": "B", "text": "Serverless / pay-as-you-go API deployment"}, {"label": "C", "text": "A dedicated on-premises GPU cluster"}, {"label": "D", "text": "Batch-only deployment with no online endpoint"}], "correct": ["B"], "explanation": "Serverless billing matches consumption, ideal for unpredictable/bursty traffic, avoiding the fixed cost of reserved PTU capacity (A), which is better for steady, high, predictable volume. C and D don't address the elasticity/cost requirement."}, {"id": "Q5", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You want new model versions to be automatically tested and promoted from a staging Foundry project to production only after passing evaluation checks. What should you implement?", "options": [{"label": "A", "text": "Manual redeployment by an administrator each release"}, {"label": "B", "text": "Integration of the Foundry project with a CI/CD pipeline that includes evaluation gates"}, {"label": "C", "text": "A single production deployment with no staging step"}, {"label": "D", "text": "Disabling versioning to simplify deployment"}], "correct": ["B"], "explanation": "This is explicitly called out in the skills outline: \"Integrate Foundry projects with CI/CD pipelines.\" Automated gating on evaluation results is the standard way to promote only validated model versions. Manual promotion (A) doesn't scale/is error-prone; C skips safe rollout; D removes traceability."}, {"id": "Q6", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Your organization needs to control the maximum number of tokens per minute a specific application can consume against a shared Foundry deployment. What should you configure?", "options": [{"label": "A", "text": "A content safety filter"}, {"label": "B", "text": "A rate limit / quota on the deployment"}, {"label": "C", "text": "A vector index"}, {"label": "D", "text": "A responsible AI evaluator"}], "correct": ["B"], "explanation": "Quotas/rate limits directly govern consumption ceilings per app/workload, matching \"Manage quotas, scaling, rate limits, and cost footprints.\" A content filter (A) governs safety, not volume; a vector index (C) and evaluator (D) are unrelated to throughput control."}, {"id": "Q7", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You need to detect when a deployed model's output quality is degrading over time compared to its baseline. What should you monitor?", "options": [{"label": "A", "text": "Only the Azure subscription cost report"}, {"label": "B", "text": "Model performance and drift metrics"}, {"label": "C", "text": "The resource group's tag structure"}, {"label": "D", "text": "The virtual network's DNS configuration"}], "correct": ["B"], "explanation": "Detecting degrading quality over time is the definition of drift monitoring \u2014 an explicit skill: \"Monitor model performance, drift, safety events, and grounding quality.\" Cost reports (A), tags (C), and DNS config (D) don't measure output quality."}, {"id": "Q8", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which authentication approach should you recommend to avoid storing API keys in application code when calling a Foundry-hosted model from an Azure-hosted app?", "options": [{"label": "A", "text": "Hardcoded API key in source control"}, {"label": "B", "text": "Managed identity with role-based access control (RBAC)"}, {"label": "C", "text": "Shared admin password"}, {"label": "D", "text": "Anonymous access"}], "correct": ["B"], "explanation": "Managed identity + RBAC eliminates the need to store secrets in code, which is explicitly listed under securing AI systems (\"managed identity, private networking, keyless credentials, role policies\"). A and C are anti-patterns; D removes security entirely."}, {"id": "Q9", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You must ensure that traffic between your application and your Foundry resource never traverses the public internet. What should you configure?", "options": [{"label": "A", "text": "A public endpoint with IP allow-listing only"}, {"label": "B", "text": "Private networking (private endpoints/VNet integration)"}, {"label": "C", "text": "A CDN in front of the Foundry endpoint"}, {"label": "D", "text": "A public content delivery proxy"}], "correct": ["B"], "explanation": "Keeping traffic off the public internet requires private endpoints/VNet integration \u2014 explicitly listed under security configuration. IP allow-listing on a public endpoint (A) still transits the public internet; a CDN (C) or public proxy (D) increase public exposure, not reduce it."}, {"id": "Q10", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You need to prevent an AI agent from executing a destructive action (e.g., deleting records) without a human reviewing it first. What should you implement?", "options": [{"label": "A", "text": "A higher token limit"}, {"label": "B", "text": "An approval workflow / oversight mode with tool-access controls"}, {"label": "C", "text": "A larger context window"}, {"label": "D", "text": "A faster model"}], "correct": ["B"], "explanation": "This matches \"Govern agent behavior with oversight modes, constraints, and tool-access controls\" directly \u2014 a human-in-the-loop gate before destructive actions. Token limits (A) and context window (C) don't control action authorization; a faster model (D) is unrelated."}, {"id": "Q11", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which responsible AI capability lets you log why a model produced a specific output, including the data sources it drew from, for audit purposes?", "options": [{"label": "A", "text": "Provenance metadata and trace logging"}, {"label": "B", "text": "A vector index"}, {"label": "C", "text": "A load balancer"}, {"label": "D", "text": "An autoscale rule"}], "correct": ["A"], "explanation": "Auditing \"why\" an output was produced, including its sources, maps directly to \"auditing through trace logging, provenance metadata, and approval workflows.\" B, C, and D are infrastructure/routing components unrelated to audit trails."}, {"id": "Q12", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "You need to block a category of harmful content (e.g., self-harm content) from being generated by your application. What should you configure in Foundry?", "options": [{"label": "A", "text": "A safety filter / content moderation guardrail"}, {"label": "B", "text": "A higher temperature setting"}, {"label": "C", "text": "A larger embedding dimension"}, {"label": "D", "text": "A batch endpoint"}], "correct": ["A"], "explanation": "Blocking harmful content categories is precisely what safety filters/guardrails/content moderation do, per \"Configure safety filters, guardrails, risk detection, and content moderation.\" Temperature (B) affects creativity, not safety; embedding dimension (C) affects retrieval; batch endpoints (D) are a deployment mode."}, {"id": "Q13", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Your monitoring shows that a RAG application's retrieved documents are frequently irrelevant to user queries. Which metric category should you investigate first?", "options": [{"label": "A", "text": "Model token cost only"}, {"label": "B", "text": "Search index health and relevance/grounding quality"}, {"label": "C", "text": "The region where the resource is deployed"}, {"label": "D", "text": "The number of deployed model versions"}], "correct": ["B"], "explanation": "Irrelevant retrieved documents point to problems in the retrieval layer, explicitly listed as \"Monitor data ingestion quality, search index health, and relevance performance.\" Token cost (A), region (C), and version count (D) don't explain relevance failures."}, {"id": "Q14", "part": 1, "format": "single", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which Foundry capability should you use to give an agent access to organizational knowledge such as a document repository, in addition to function-calling tools?", "options": [{"label": "A", "text": "Knowledge/memory integration services"}, {"label": "B", "text": "A speech translation pipeline"}, {"label": "C", "text": "An image generation model"}, {"label": "D", "text": "A CDN cache"}], "correct": ["A"], "explanation": "Giving an agent access to organizational knowledge beyond function calls is \"appropriate memory, tool, and knowledge integration services for agent solutions.\" Speech translation (B), image generation (C), and CDN caching (D) are unrelated capabilities."}, {"id": "Q15", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You are building an application that must answer questions using only your company's internal knowledge base, minimizing hallucination. Which technique should you implement?", "options": [{"label": "A", "text": "Increase the model's temperature"}, {"label": "B", "text": "Retrieval-augmented generation (RAG)"}, {"label": "C", "text": "Use a smaller context window"}, {"label": "D", "text": "Disable safety filters"}], "correct": ["B"], "explanation": "RAG grounds generation in retrieved, authoritative content, directly reducing hallucination versus relying purely on parametric model knowledge. Increasing temperature (A) increases randomness/hallucination risk; a smaller context window (C) reduces available grounding; disabling safety filters (D) is unrelated and harmful."}, {"id": "Q16", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You need an agent that can call an internal REST API to look up order status during a conversation. What capability must you implement?", "options": [{"label": "A", "text": "Function-calling / tool integration"}, {"label": "B", "text": "Image captioning"}, {"label": "C", "text": "OCR-only extraction"}, {"label": "D", "text": "Sentiment analysis"}], "correct": ["A"], "explanation": "Calling an external REST API mid-conversation is the definition of function-calling/tool use for agents. B, C, and D are unrelated modalities/tasks."}, {"id": "Q17", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "A multi-step task requires the agent to reason across several intermediate steps before producing a final answer. Which technique supports this?", "options": [{"label": "A", "text": "Multistep reasoning / chain-of-thought pipeline"}, {"label": "B", "text": "A static FAQ lookup table"}, {"label": "C", "text": "Disabling function calling"}, {"label": "D", "text": "A single-shot prompt with no context"}], "correct": ["A"], "explanation": "Breaking a task into intermediate reasoning steps before a final answer is explicitly \"multistep reasoning pipelines\" and \"chain-of-thought evaluations.\" A static lookup (B) can't reason; disabling tools (C) or using a single-shot prompt (D) removes the ability to reason across steps."}, {"id": "Q18", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You need to evaluate whether a generative AI application is producing factually ungrounded statements. Which evaluation category should you apply?", "options": [{"label": "A", "text": "Latency evaluation only"}, {"label": "B", "text": "Fabrication/groundedness detection"}, {"label": "C", "text": "Cost evaluation only"}, {"label": "D", "text": "Network throughput evaluation"}], "correct": ["B"], "explanation": "Evaluating factual ungroundedness is explicitly \"detecting fabrications, relevance, quality, and safety\" under model/app evaluation. Latency (A), cost (C), and network throughput (D) are operational, not quality metrics."}, {"id": "Q19", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which Foundry component should you use to integrate a generative workflow into a Python application?", "options": [{"label": "A", "text": "Foundry SDK and connectors"}, {"label": "B", "text": "Azure DNS zones"}, {"label": "C", "text": "Azure Traffic Manager"}, {"label": "D", "text": "Azure Bastion"}], "correct": ["A"], "explanation": "Application integration of generative workflows is explicitly done via \"Foundry SDKs and connectors.\" B, C, and D are Azure networking services unrelated to app-level SDK integration."}, {"id": "Q20", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You are designing a solution where multiple specialized agents (e.g., a research agent and a summarization agent) must collaborate to complete a task. What should you implement?", "options": [{"label": "A", "text": "A single monolithic prompt"}, {"label": "B", "text": "Orchestrated multi-agent solution"}, {"label": "C", "text": "A single static function with no LLM"}, {"label": "D", "text": "A batch endpoint with no orchestration"}], "correct": ["B"], "explanation": "Coordinating multiple specialized agents toward a shared goal is literally \"implement orchestrated multi-agent solutions.\" A single prompt (A) or static function (C) can't coordinate specialized roles; a batch endpoint with no orchestration (D) has no coordination logic."}, {"id": "Q21", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You want an agent to remember details from earlier in a conversation across multiple turns. What must you configure?", "options": [{"label": "A", "text": "Conversation memory"}, {"label": "B", "text": "A vector image encoder only"}, {"label": "C", "text": "A content safety filter"}, {"label": "D", "text": "A translation pipeline"}], "correct": ["A"], "explanation": "Retaining details across turns is explicitly \"conversation memory\" as part of building agents that integrate retrieval, function-calling, and memory. B, C, and D address different capabilities entirely."}, {"id": "Q22", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "An agent must be allowed to take low-risk actions autonomously but must pause and request human approval for high-risk actions. What should you design?", "options": [{"label": "A", "text": "A fully autonomous agent with no controls"}, {"label": "B", "text": "A semiautonomous workflow with safeguards and approval flow controls"}, {"label": "C", "text": "A read-only agent with no tools"}, {"label": "D", "text": "A model with no orchestration"}], "correct": ["B"], "explanation": "This matches \"build autonomous or semiautonomous workflows with safeguards and approval flow controls\" \u2014 precisely a tiered autonomy model based on risk. Fully autonomous with no controls (A) is unsafe; a read-only agent (C) can't act at all; no orchestration (D) doesn't address risk tiers."}, {"id": "Q23", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You need to reduce hallucinations by having the model critique and revise its own draft answer before returning it to the user. What technique is this?", "options": [{"label": "A", "text": "Self-critique / reflection loop"}, {"label": "B", "text": "Prompt truncation"}, {"label": "C", "text": "Disabling RAG"}, {"label": "D", "text": "Reducing the number of tokens allowed"}], "correct": ["A"], "explanation": "Having the model review and revise its own draft is explicitly \"model reflection, chain-of-thought evaluations, and self-critique loops.\" B, C, and D reduce capability rather than improve accuracy."}, {"id": "Q24", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which observability signals should you capture to diagnose why an agent's responses are slow and expensive?", "options": [{"label": "A", "text": "Tracing, token analytics, and latency breakdowns"}, {"label": "B", "text": "Only the resource group name"}, {"label": "C", "text": "Only the subscription ID"}, {"label": "D", "text": "The Azure region's time zone"}], "correct": ["A"], "explanation": "Diagnosing slow, expensive responses requires observability signals explicitly listed: \"tracing, token analytics, safety signals, and latency breakdowns.\" B, C, and D carry no diagnostic performance data."}, {"id": "Q25", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You need your application to connect to a specific Foundry project to consume a deployed model endpoint. What must you configure in the application?", "options": [{"label": "A", "text": "A connection string/endpoint and credential pointing to the Foundry project"}, {"label": "B", "text": "A local-only file path"}, {"label": "C", "text": "A static HTML page"}, {"label": "D", "text": "An unrelated storage account key"}], "correct": ["A"], "explanation": "\"Configure an application to connect to a Foundry project\" requires endpoint/connection configuration and credentials (ideally managed identity). B, C, and D are unrelated or insecure."}, {"id": "Q26", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You are defining a new agent and need to specify what the agent is allowed to do and how it should behave. What should you define first?", "options": [{"label": "A", "text": "Agent roles, goals, conversation-tracking approach, and tool schemas"}, {"label": "B", "text": "The Azure region only"}, {"label": "C", "text": "The billing subscription only"}, {"label": "D", "text": "The virtual network subnet mask"}], "correct": ["A"], "explanation": "This is the exact skill statement: \"Define agent roles, goals, conversation-tracking approach, and tool schemas\" as the first step in building an agent. B, C, and D are infrastructure details, not agent definition."}, {"id": "Q27", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which technique allows you to adjust how creative or deterministic a model's output is, without retraining the model?", "options": [{"label": "A", "text": "Prompt engineering and adjusting model parameters (e.g., temperature)"}, {"label": "B", "text": "Changing the Azure subscription tier"}, {"label": "C", "text": "Increasing disk IOPS"}, {"label": "D", "text": "Reconfiguring the virtual network"}], "correct": ["A"], "explanation": "Tuning generation behavior without retraining is explicitly \"prompt engineering and adjusting model parameters.\" B, C, and D are unrelated infrastructure changes."}, {"id": "Q28", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You want to combine a fast, cheap rules engine with an LLM so simple queries are handled by rules and complex ones by the model. What is this pattern called?", "options": [{"label": "A", "text": "Orchestration of multiple models/flows or hybrid LLM and rules engines"}, {"label": "B", "text": "Pure RAG with no rules"}, {"label": "C", "text": "A single static lookup table"}, {"label": "D", "text": "Disabling the LLM entirely"}], "correct": ["A"], "explanation": "Combining a cheap rules engine with an LLM for complex cases is explicitly \"orchestrate multiple models, flows, or hybrid LLM and rules engines.\" B, C, and D remove the hybrid design entirely."}, {"id": "Q29", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "After deploying an agent to production, you must continuously evaluate its behavior and perform error analysis. What should you integrate?", "options": [{"label": "A", "text": "Monitoring integrated into the deployed agent"}, {"label": "B", "text": "A one-time manual test before launch only"}, {"label": "C", "text": "No monitoring, since agents are self-correcting"}, {"label": "D", "text": "A static log file reviewed annually"}], "correct": ["A"], "explanation": "Continuous behavior evaluation and error analysis in production requires \"integrate monitoring into deployed agents, evaluate agent behavior, and perform error analysis\" \u2014 an ongoing, not one-time, activity. B and D are insufficient; C is unsafe."}, {"id": "Q30", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "You need the agent to use both a document search tool and a custom internal function during the same conversation. What should you configure?", "options": [{"label": "A", "text": "Integration of multiple agent tools, including search and custom functions"}, {"label": "B", "text": "A single tool with no alternatives"}, {"label": "C", "text": "Removal of all tools to simplify the agent"}, {"label": "D", "text": "A model that ignores tool outputs"}], "correct": ["A"], "explanation": "Supporting several tool types within one agent conversation matches \"integrate agent tools, including APIs, knowledge stores, search, content understanding, and custom functions.\" B, C, and D limit or remove capability."}, {"id": "Q31", "part": 1, "format": "single", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which model type should you choose for a task that must generate and explain source code?", "options": [{"label": "A", "text": "A code model"}, {"label": "B", "text": "A pure vision model"}, {"label": "C", "text": "A text-to-speech model"}, {"label": "D", "text": "A translation-only model"}], "correct": ["A"], "explanation": "Generating and explaining source code is the defined purpose of code models, one of the model categories explicitly listed (LLMs, small models, code models, multimodal models). B, C, and D are unrelated modalities."}, {"id": "Q32", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "You need to generate a new marketing image from a text description. Which capability should you use?", "options": [{"label": "A", "text": "Text-to-image generation"}, {"label": "B", "text": "Sentiment analysis"}, {"label": "C", "text": "Speech-to-text"}, {"label": "D", "text": "Entity extraction"}], "correct": ["A"], "explanation": "\"Implement a solution that generates images from text prompts and reference media\" is explicit. B, C, and D are non-visual-generation capabilities."}, {"id": "Q33", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "A user wants to edit only a specific region of an existing image while keeping the rest unchanged. Which technique should you use?", "options": [{"label": "A", "text": "Inpainting / mask-based editing"}, {"label": "B", "text": "Full image regeneration from scratch"}, {"label": "C", "text": "Sentiment scoring"}, {"label": "D", "text": "Named entity recognition"}], "correct": ["A"], "explanation": "Editing only a specific region while preserving the rest is precisely \"inpainting, mask-based edits, and prompt-driven modifications.\" Full regeneration (B) would alter the whole image; C and D are unrelated text tasks."}, {"id": "Q34", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "You must generate accurate, accessibility-compliant alt-text for product images automatically. What should you configure?", "options": [{"label": "A", "text": "Alt-text/extended image description generation aligned to accessibility guidelines"}, {"label": "B", "text": "A speech translation pipeline"}, {"label": "C", "text": "A vector database with no image model"}, {"label": "D", "text": "A batch billing report"}], "correct": ["A"], "explanation": "This is the exact skill: \"Configure generation of alt-text and extended image descriptions aligned to accessibility guidelines.\" B, C, and D don't address accessibility text generation."}, {"id": "Q35", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "You need your application to answer natural-language questions about the contents of an uploaded image (e.g., \"What color is the car?\"). Which capability supports this?", "options": [{"label": "A", "text": "Visual question-answering grounded in visual evidence"}, {"label": "B", "text": "Text-only summarization"}, {"label": "C", "text": "Currency conversion"}, {"label": "D", "text": "DNS resolution"}], "correct": ["A"], "explanation": "Answering natural-language questions about image content is explicitly \"question-answering grounded in visual evidence.\" B, C, and D don't process visual content."}, {"id": "Q36", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "You want to extract structured visual characteristics (e.g., object attributes) from images using Foundry Tools. What should you use?", "options": [{"label": "A", "text": "Azure Content Understanding"}, {"label": "B", "text": "Azure Traffic Manager"}, {"label": "C", "text": "Azure ExpressRoute"}, {"label": "D", "text": "Azure Key Vault"}], "correct": ["A"], "explanation": "Extracting structured visual characteristics via Foundry Tools maps directly to \"Implement visual understanding by configuring Azure Content Understanding in Foundry Tools.\" B, C, and D are networking/security services, not vision extraction."}, {"id": "Q37", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "An attacker embeds hidden instructions as text inside an uploaded image to try to manipulate your agent. What should your solution detect and mitigate?", "options": [{"label": "A", "text": "Indirect prompt injection via embedded image text"}, {"label": "B", "text": "Network latency"}, {"label": "C", "text": "Currency exchange drift"}, {"label": "D", "text": "Token quota exhaustion"}], "correct": ["A"], "explanation": "This is explicitly named as a responsible-AI risk for multimodal content: \"detect and mitigate indirect prompt injection by using embedded text in images.\" B, C, and D are unrelated operational concerns."}, {"id": "Q38", "part": 1, "format": "single", "domain": "Domain 3: Implement computer vision solutions", "question": "You need to process a video to identify distinct segments and interpret what happens in each. What should you implement?", "options": [{"label": "A", "text": "Video analysis / segmentation workflow"}, {"label": "B", "text": "A static image classifier only"}, {"label": "C", "text": "A text translation pipeline"}, {"label": "D", "text": "A billing alert rule"}], "correct": ["A"], "explanation": "Identifying and interpreting distinct segments of a video is explicitly \"implement video analysis workflows to process and interpret video segments.\" B, C, and D don't process video content."}, {"id": "Q39", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "You need to pull structured JSON containing entities and a summary out of unstructured customer emails using a generative model. What should you implement?", "options": [{"label": "A", "text": "Generative prompting with Foundry Tools for entity/summary extraction into structured JSON"}, {"label": "B", "text": "A speech-to-text pipeline only"}, {"label": "C", "text": "An image captioning model"}, {"label": "D", "text": "A load-balancing rule"}], "correct": ["A"], "explanation": "This matches \"extract entities, topics, summaries, and structured JSON outputs by using generative prompting and Foundry Tools\" exactly. B, C, and D are unrelated modalities/functions."}, {"id": "Q40", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "You must detect when customer messages contain sensitive or unsafe content before they reach an agent. What should you configure?", "options": [{"label": "A", "text": "Sentiment, tone, safety, and sensitive-content detection"}, {"label": "B", "text": "A vision-only pipeline"}, {"label": "C", "text": "A CDN cache rule"}, {"label": "D", "text": "A subnet route table"}], "correct": ["A"], "explanation": "Detecting unsafe/sensitive content in messages is explicitly \"configure detection of sentiment, tone, safety issues, and sensitive content.\" B, C, and D don't analyze text content or safety."}, {"id": "Q41", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "Your application must translate incoming support tickets from multiple languages into English. Which service/approach fits?", "options": [{"label": "A", "text": "Azure Translator in Foundry Tools or an LLM-powered translation flow"}, {"label": "B", "text": "A code-generation model"}, {"label": "C", "text": "A vector index with no translation capability"}, {"label": "D", "text": "A DNS zone"}], "correct": ["A"], "explanation": "Multi-language translation is explicitly built via \"Azure Translator in Foundry Tools or LLM-powered translation flows.\" B, C, and D don't provide translation."}, {"id": "Q42", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "You need to convert spoken customer calls into text so an agent can process them. What should you implement?", "options": [{"label": "A", "text": "Speech-to-text workflow"}, {"label": "B", "text": "Image inpainting"}, {"label": "C", "text": "Entity-only extraction with no audio support"}, {"label": "D", "text": "A static FAQ"}], "correct": ["A"], "explanation": "Converting spoken calls into text is literally the speech-to-text capability listed under \"implement speech solutions.\" B, C, and D don't process audio."}, {"id": "Q43", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "You want an agent to reason directly over an audio clip without a separate transcription step. What capability supports this?", "options": [{"label": "A", "text": "Multimodal reasoning from audio inputs"}, {"label": "B", "text": "Text-only summarization"}, {"label": "C", "text": "A batch billing job"}, {"label": "D", "text": "A DNS failover rule"}], "correct": ["A"], "explanation": "Reasoning directly over audio without a separate transcription step is explicitly \"enable multimodal reasoning from audio inputs.\" B, C, and D don't apply to direct audio reasoning."}, {"id": "Q44", "part": 1, "format": "single", "domain": "Domain 4: Implement text analysis solutions", "question": "Your solution must produce compliance-oriented summaries tailored to a specific regulated domain rather than generic summaries. What should you do?", "options": [{"label": "A", "text": "Customize/fine-tune the language model outputs for the domain task"}, {"label": "B", "text": "Use only the default, unmodified model output"}, {"label": "C", "text": "Disable prompting entirely"}, {"label": "D", "text": "Remove all context from the prompt"}], "correct": ["A"], "explanation": "Producing domain-specific compliance summaries requires \"customize language model outputs for domain tasks, such as compliance summarization.\" B, C, and D would degrade rather than improve domain relevance."}, {"id": "Q45", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "You need to build a pipeline that ingests PDFs, images, and audio, and makes them searchable via a combination of exact terms and semantic meaning. What should you configure?", "options": [{"label": "A", "text": "Hybrid search (semantic + keyword/vector) over ingested, indexed content"}, {"label": "B", "text": "A single keyword-only index"}, {"label": "C", "text": "A translation-only pipeline"}, {"label": "D", "text": "A billing dashboard"}], "correct": ["A"], "explanation": "Combining exact term matching with semantic meaning is explicitly \"configure semantic search, hybrid search, and vector search for grounding.\" B, C, and D each address only part of the requirement or nothing relevant."}, {"id": "Q46", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "Scanned PDF documents must be converted into machine-readable text before being indexed for RAG. What technique should you apply?", "options": [{"label": "A", "text": "Optical character recognition (OCR) as part of the RAG ingestion flow"}, {"label": "B", "text": "Sentiment analysis"}, {"label": "C", "text": "Video segmentation"}, {"label": "D", "text": "Load balancing"}], "correct": ["A"], "explanation": "Converting scanned PDFs to machine-readable text before indexing is explicitly \"configure RAG ingestion flow, including documents and using optical character recognition (OCR).\" B, C, and D are unrelated processes."}, {"id": "Q47", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "You want an agent's tools to query the same retrieval pipeline used for RAG rather than maintaining a separate system. What should you do?", "options": [{"label": "A", "text": "Connect the retrieval pipeline directly to agent tools/workflows"}, {"label": "B", "text": "Build a completely isolated, duplicate index for agents only"}, {"label": "C", "text": "Disable retrieval for agents"}, {"label": "D", "text": "Use only static, hardcoded answers for agents"}], "correct": ["A"], "explanation": "Reusing the same retrieval pipeline for agent tools instead of duplicating it is explicitly \"connect retrieval pipelines directly to workflows and agent tools.\" B increases maintenance burden and drift risk; C and D remove retrieval capability from agents."}, {"id": "Q48", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "You need to extract specific fields (like invoice number and total) from scanned invoices with varying layouts. What should you implement?", "options": [{"label": "A", "text": "Multimodal extraction combining OCR, layout analysis, and field extraction"}, {"label": "B", "text": "A single global regular expression"}, {"label": "C", "text": "Sentiment scoring"}, {"label": "D", "text": "Speech-to-text only"}], "correct": ["A"], "explanation": "Extracting specific fields from documents with varying layouts is explicitly \"extract information by using multimodal pipelines that combine OCR, layout analysis, and field extraction.\" A single global regex (B) can't handle varying layouts; C and D are unrelated tasks."}, {"id": "Q49", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "You need to produce clean, structured markdown output from complex documents so it can be reliably consumed by an LLM downstream. What should you use?", "options": [{"label": "A", "text": "Content Understanding analyzers for structured/markdown output"}, {"label": "B", "text": "A raw, unprocessed PDF binary"}, {"label": "C", "text": "A network security group rule"}, {"label": "D", "text": "A load-balancer health probe"}], "correct": ["A"], "explanation": "Producing clean, structured markdown for downstream LLM consumption is explicitly \"implement analyzers for generating structured or markdown outputs for downstream reasoning by using Content Understanding.\" B, C, and D don't produce structured, cleaned output."}, {"id": "Q50", "part": 1, "format": "single", "domain": "Domain 5: Implement information extraction solutions", "question": "During ingestion, you need to enrich extracted text with custom logic (e.g., custom taxonomy tagging) alongside built-in capabilities. What should you configure?", "options": [{"label": "A", "text": "Enrichment using custom or built-in skills for text, images, and layout"}, {"label": "B", "text": "A DNS CNAME record"}, {"label": "C", "text": "A billing budget alert"}, {"label": "D", "text": "A single hardcoded lookup table with no extensibility"}], "correct": ["A"], "explanation": "Adding custom logic alongside built-in extraction is explicitly \"implement enrichment by using custom or built-in skills for text, images, and layout.\" B, C, and D don't support extensible enrichment.\n\n---\n\n---"}, {"id": "MS1", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO factors should influence your choice between deploying a model with provisioned throughput units (PTUs) versus serverless pay-as-you-go?", "select_n": 2, "options": [{"label": "A", "text": "Whether traffic volume is steady/predictable versus bursty/unpredictable"}, {"label": "B", "text": "The color scheme of the Foundry portal"}, {"label": "C", "text": "Whether you need guaranteed throughput at predictable cost"}, {"label": "D", "text": "The number of characters in the resource name"}, {"label": "E", "text": "The default region's time zone"}], "correct": ["A", "C"], "explanation": "Steadiness/predictability of traffic and the need for guaranteed throughput at predictable cost are exactly the deciding factors between PTUs (steady/guaranteed) and serverless (bursty/consumption-based). B, D, E are irrelevant distractors."}, {"id": "MS2", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO controls help you keep an AI application's traffic off the public internet?", "select_n": 2, "options": [{"label": "A", "text": "Private endpoints"}, {"label": "B", "text": "A public IP with no restrictions"}, {"label": "C", "text": "VNet integration"}, {"label": "D", "text": "A wildcard DNS entry"}, {"label": "E", "text": "Disabling all firewalls"}], "correct": ["A", "C"], "explanation": "Private endpoints and VNet integration are the two concrete mechanisms for keeping traffic off the public internet. A public IP (B) and disabled firewalls (E) do the opposite; a wildcard DNS entry (D) is unrelated."}, {"id": "MS3", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO items should be part of a responsible AI instrumentation strategy for a generative AI system?", "select_n": 2, "options": [{"label": "A", "text": "Safety evaluators"}, {"label": "B", "text": "Provenance metadata / trace logging"}, {"label": "C", "text": "A larger context window"}, {"label": "D", "text": "A faster GPU SKU"}, {"label": "E", "text": "A higher token limit"}], "correct": ["A", "B"], "explanation": "Safety evaluators and provenance/trace logging are explicit responsible AI instrumentation components. A larger context window (C), faster GPU (D), and higher token limit (E) are performance levers, not responsible AI controls."}, {"id": "MS4", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO signals indicate you should investigate a RAG application's retrieval layer rather than the model itself?", "select_n": 2, "options": [{"label": "A", "text": "Search index health degradation"}, {"label": "B", "text": "Low relevance/grounding scores on retrieved content"}, {"label": "C", "text": "High cloud spend on unrelated services"}, {"label": "D", "text": "The subscription's billing currency"}, {"label": "E", "text": "The resource group's tag count"}], "correct": ["A", "B"], "explanation": "Both are explicitly listed under monitoring data ingestion/search quality: \"search index health\" and \"relevance performance.\" C, D, E have no bearing on retrieval quality."}, {"id": "MS5", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO of the following are valid ways to secure access to a Foundry deployment without embedding secrets in code?", "select_n": 2, "options": [{"label": "A", "text": "Managed identity"}, {"label": "B", "text": "Keyless credentials"}, {"label": "C", "text": "A hardcoded API key checked into source control"}, {"label": "D", "text": "A shared password emailed to the team"}, {"label": "E", "text": "An unauthenticated public endpoint"}], "correct": ["A", "B"], "explanation": "Managed identity and keyless credentials are the explicitly listed secure-access mechanisms. C, D, E are credential anti-patterns."}, {"id": "MS6", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "When managing cost footprint for model and agent workloads, which TWO levers should you configure?", "select_n": 2, "options": [{"label": "A", "text": "Quotas"}, {"label": "B", "text": "Rate limits"}, {"label": "C", "text": "The Foundry portal's color theme"}, {"label": "D", "text": "The number of browser tabs open"}, {"label": "E", "text": "The VM's keyboard layout"}], "correct": ["A", "B"], "explanation": "Quotas and rate limits are the exact levers named under \"manage quotas, scaling, rate limits, and cost footprints.\" C, D, E are nonsensical distractors."}, {"id": "MS7", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO capabilities should you use to govern agent behavior and prevent unsafe autonomous actions?", "select_n": 2, "options": [{"label": "A", "text": "Oversight modes"}, {"label": "B", "text": "Tool-access controls"}, {"label": "C", "text": "A larger training dataset"}, {"label": "D", "text": "A cheaper model tier"}, {"label": "E", "text": "Disabling all monitoring"}], "correct": ["A", "B"], "explanation": "Oversight modes and tool-access controls are explicitly named under governing agent behavior. C and D don't constrain behavior; E removes safety visibility entirely."}, {"id": "MS8", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO categories should a CI/CD pipeline for Foundry projects include before promoting a model to production?", "select_n": 2, "options": [{"label": "A", "text": "Automated evaluation gates"}, {"label": "B", "text": "Staged/staging environment testing"}, {"label": "C", "text": "Skipping all testing to save time"}, {"label": "D", "text": "Manual-only, undocumented sign-off"}, {"label": "E", "text": "Removing version history"}], "correct": ["A", "B"], "explanation": "Automated evaluation gates and staging environments are standard, explicitly-implied CI/CD practices for safe promotion. C, D, E undermine safe deployment."}, {"id": "MS9", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO of the following are appropriate model categories to choose from when planning an Azure AI solution?", "select_n": 2, "options": [{"label": "A", "text": "Small language models (SLMs)"}, {"label": "B", "text": "Multimodal models"}, {"label": "C", "text": "A relational database engine"}, {"label": "D", "text": "A DNS resolver"}, {"label": "E", "text": "A load balancer SKU"}], "correct": ["A", "B"], "explanation": "SLMs and multimodal models are both explicitly listed model categories in the \"choose an appropriate model\" skill. C, D, E are non-AI infrastructure components."}, {"id": "MS10", "part": 3, "format": "multi", "domain": "Domain 1: Plan and manage an Azure AI solution", "question": "Which TWO metrics fall under \"monitor model performance, drift, safety events, and grounding quality\"?", "select_n": 2, "options": [{"label": "A", "text": "Model drift over time"}, {"label": "B", "text": "Safety event frequency"}, {"label": "C", "text": "The Azure region's postal code"}, {"label": "D", "text": "The number of resource tags"}, {"label": "E", "text": "The subscription's creation date"}], "correct": ["A", "B"], "explanation": "Drift and safety events are explicitly named monitoring targets. C, D, E carry no performance/quality signal."}, {"id": "MS11", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO techniques directly reduce hallucination/fabrication in generative AI responses?", "select_n": 2, "options": [{"label": "A", "text": "Retrieval-augmented generation (RAG)"}, {"label": "B", "text": "Self-critique / reflection loops"}, {"label": "C", "text": "Increasing temperature to maximum"}, {"label": "D", "text": "Removing all grounding context"}, {"label": "E", "text": "Disabling safety evaluators"}], "correct": ["A", "B"], "explanation": "RAG grounds responses in retrieved facts; self-critique loops catch and correct errors before the final response \u2014 both explicitly reduce fabrication. C and D increase hallucination risk; E removes a safety check."}, {"id": "MS12", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO components are required to build an agent that can look up live data and remember prior conversation turns?", "select_n": 2, "options": [{"label": "A", "text": "Function-calling/tool integration"}, {"label": "B", "text": "Conversation memory"}, {"label": "C", "text": "A static FAQ page"}, {"label": "D", "text": "A batch-only endpoint"}, {"label": "E", "text": "A translation-only pipeline"}], "correct": ["A", "B"], "explanation": "Function-calling (for live lookups) and conversation memory (for retaining context) are both explicitly required for this combined capability. C, D, E don't provide either capability."}, {"id": "MS13", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO evaluation dimensions should you assess when evaluating a generative AI application before production release?", "select_n": 2, "options": [{"label": "A", "text": "Fabrication/groundedness"}, {"label": "B", "text": "Relevance and quality"}, {"label": "C", "text": "The number of resource tags"}, {"label": "D", "text": "The Azure region's population"}, {"label": "E", "text": "The subscription's default currency"}], "correct": ["A", "B"], "explanation": "Fabrication/groundedness and relevance/quality are both explicitly listed evaluation dimensions. C, D, E are unrelated to output quality."}, {"id": "MS14", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO are valid patterns for orchestrating complex agent workflows?", "select_n": 2, "options": [{"label": "A", "text": "Multi-agent orchestration with specialized agent roles"}, {"label": "B", "text": "Hybrid LLM and rules-engine orchestration"}, {"label": "C", "text": "A single hardcoded if/else with no model"}, {"label": "D", "text": "Removing all tool access"}, {"label": "E", "text": "A static lookup table with no reasoning"}], "correct": ["A", "B"], "explanation": "Multi-agent orchestration and hybrid LLM/rules-engine orchestration are both explicitly named orchestration patterns. C, D, E remove reasoning/orchestration capability."}, {"id": "MS15", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO observability signals help you diagnose high latency and high cost in an agent application?", "select_n": 2, "options": [{"label": "A", "text": "Token analytics"}, {"label": "B", "text": "Latency breakdowns/tracing"}, {"label": "C", "text": "The Foundry portal's font size"}, {"label": "D", "text": "The number of installed browser extensions"}, {"label": "E", "text": "The resource's creation date only"}], "correct": ["A", "B"], "explanation": "Token analytics and latency breakdowns are explicitly listed observability signals for diagnosing cost and speed issues. C, D, E carry no diagnostic value."}, {"id": "MS16", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO safeguards should a semiautonomous agent workflow include before taking high-risk actions?", "select_n": 2, "options": [{"label": "A", "text": "Approval flow controls"}, {"label": "B", "text": "Defined oversight/escalation paths"}, {"label": "C", "text": "No logging, to reduce noise"}, {"label": "D", "text": "Unlimited tool access with no restriction"}, {"label": "E", "text": "Removing human review entirely"}], "correct": ["A", "B"], "explanation": "Approval flow controls and defined oversight/escalation paths are the explicit safeguards for semiautonomous workflows. C, D, E remove safety controls entirely."}, {"id": "MS17", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO are valid uses of prompt engineering and parameter tuning in a Foundry application?", "select_n": 2, "options": [{"label": "A", "text": "Adjusting temperature to control randomness"}, {"label": "B", "text": "Refining prompt structure to improve output quality"}, {"label": "C", "text": "Changing the Azure subscription tier"}, {"label": "D", "text": "Resizing a virtual network subnet"}, {"label": "E", "text": "Modifying DNS TTL values"}], "correct": ["A", "B"], "explanation": "Both are explicitly \"prompt engineering and adjusting model parameters.\" C, D, E are unrelated infrastructure changes."}, {"id": "MS18", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO elements should be defined when designing a new agent's core behavior?", "select_n": 2, "options": [{"label": "A", "text": "Agent goals and roles"}, {"label": "B", "text": "Tool schemas"}, {"label": "C", "text": "The billing region only"}, {"label": "D", "text": "The storage account redundancy tier"}, {"label": "E", "text": "The load balancer's health probe interval"}], "correct": ["A", "B"], "explanation": "Agent roles/goals and tool schemas are the explicit first-step definitions for building an agent. C, D, E are infrastructure details unrelated to agent behavior definition."}, {"id": "MS19", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO Foundry integration points let a Python application consume a deployed generative AI model?", "select_n": 2, "options": [{"label": "A", "text": "Foundry SDK"}, {"label": "B", "text": "Foundry connectors"}, {"label": "C", "text": "Azure Bastion"}, {"label": "D", "text": "Azure Traffic Manager"}, {"label": "E", "text": "Azure DNS zones"}], "correct": ["A", "B"], "explanation": "Foundry SDK and connectors are explicitly the integration points for applications. C, D, E are Azure networking services unrelated to app-level SDK integration."}, {"id": "MS20", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO are examples of multistep reasoning support in an agentic application?", "select_n": 2, "options": [{"label": "A", "text": "Chain-of-thought pipelines"}, {"label": "B", "text": "Tool-augmented multistep workflows"}, {"label": "C", "text": "A single-turn prompt with no intermediate steps"}, {"label": "D", "text": "Disabling function calling"}, {"label": "E", "text": "A static response cache with no reasoning"}], "correct": ["A", "B"], "explanation": "Chain-of-thought pipelines and tool-augmented multistep workflows are both explicitly named multistep reasoning patterns. C, D, E remove the ability to reason across steps."}, {"id": "MS21", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO practices help ensure an orchestrated multi-agent solution behaves reliably in production?", "select_n": 2, "options": [{"label": "A", "text": "Integrated monitoring across agents"}, {"label": "B", "text": "Ongoing error analysis of agent behavior"}, {"label": "C", "text": "Deploying with no evaluation"}, {"label": "D", "text": "Removing all conversation tracking"}, {"label": "E", "text": "Disabling tool-access logging"}], "correct": ["A", "B"], "explanation": "Integrated monitoring and ongoing error analysis are explicitly required for reliable multi-agent production behavior. C, D, E undermine reliability and safety."}, {"id": "MS22", "part": 3, "format": "multi", "domain": "Domain 2: Implement generative AI and agentic solutions", "question": "Which TWO model types would you choose specifically for a coding assistant feature?", "select_n": 2, "options": [{"label": "A", "text": "A code model"}, {"label": "B", "text": "A general-purpose LLM capable of code generation"}, {"label": "C", "text": "A pure image-generation model"}, {"label": "D", "text": "A speech-to-text-only model"}, {"label": "E", "text": "A translation-only model"}], "correct": ["A", "B"], "explanation": "A dedicated code model and a general-purpose LLM capable of code generation are both valid choices depending on requirements; the skills outline lists \"code models\" as a distinct category alongside general LLMs capable of code tasks. C, D, E are unrelated modalities."}, {"id": "MS23", "part": 3, "format": "multi", "domain": "Domain 3: Implement computer vision solutions", "question": "Which TWO capabilities are part of implementing responsible AI for multimodal content?", "select_n": 2, "options": [{"label": "A", "text": "Filters that classify unsafe visual content"}, {"label": "B", "text": "Detection of indirect prompt injection embedded in images"}, {"label": "C", "text": "Disabling all image processing"}, {"label": "D", "text": "Removing watermark enforcement"}, {"label": "E", "text": "Ignoring brand usage policy checks"}], "correct": ["A", "B"], "explanation": "Both are explicitly listed under \"implement responsible AI for multimodal content.\" C, D, E remove or ignore safety controls."}, {"id": "MS24", "part": 3, "format": "multi", "domain": "Domain 3: Implement computer vision solutions", "question": "Which TWO tasks fall under \"design and implement multimodal understanding workflows\"?", "select_n": 2, "options": [{"label": "A", "text": "Generating captions for images"}, {"label": "B", "text": "Visual question-answering grounded in image evidence"}, {"label": "C", "text": "Translating written text between languages"}, {"label": "D", "text": "Extracting entities from plain text only"}, {"label": "E", "text": "Managing a relational database schema"}], "correct": ["A", "B"], "explanation": "Captioning and visual question-answering are both explicitly listed under multimodal understanding workflows. C, D, E are non-visual capabilities."}, {"id": "MS25", "part": 3, "format": "multi", "domain": "Domain 3: Implement computer vision solutions", "question": "Which TWO editing capabilities are part of image-generation workflows?", "select_n": 2, "options": [{"label": "A", "text": "Inpainting/mask-based edits"}, {"label": "B", "text": "Prompt-driven modifications"}, {"label": "C", "text": "DNS record editing"}, {"label": "D", "text": "Network security group editing"}, {"label": "E", "text": "Billing alert editing"}], "correct": ["A", "B"], "explanation": "Inpainting and prompt-driven modifications are both explicitly listed image-editing controls. C, D, E are unrelated infrastructure settings."}, {"id": "MS26", "part": 3, "format": "multi", "domain": "Domain 3: Implement computer vision solutions", "question": "Which TWO are valid Content Understanding pipeline modes referenced in the AI-103 skills outline?", "select_n": 2, "options": [{"label": "A", "text": "Single-task pipelines"}, {"label": "B", "text": "Pro-mode pipelines"}, {"label": "C", "text": "A pipeline with no configuration options"}, {"label": "D", "text": "A billing-only pipeline"}, {"label": "E", "text": "A DNS-only pipeline"}], "correct": ["A", "B"], "explanation": "Single-task and pro-mode are the two Content Understanding pipeline configurations explicitly named in the skills outline. C, D, E are not real configurations."}, {"id": "MS27", "part": 3, "format": "multi", "domain": "Domain 4: Implement text analysis solutions", "question": "Which TWO capabilities should you use to detect potentially harmful or sensitive content in incoming text?", "select_n": 2, "options": [{"label": "A", "text": "Safety issue detection"}, {"label": "B", "text": "Sensitive content detection"}, {"label": "C", "text": "Video segmentation"}, {"label": "D", "text": "Load-balancer configuration"}, {"label": "E", "text": "DNS resolution"}], "correct": ["A", "B"], "explanation": "Safety issue and sensitive content detection are both explicitly listed text analysis capabilities. C, D, E are unrelated to text safety."}, {"id": "MS28", "part": 3, "format": "multi", "domain": "Domain 4: Implement text analysis solutions", "question": "Which TWO are valid approaches to translating text within a Foundry-based application?", "select_n": 2, "options": [{"label": "A", "text": "Azure Translator in Foundry Tools"}, {"label": "B", "text": "An LLM-powered translation flow"}, {"label": "C", "text": "A vector index with no translation logic"}, {"label": "D", "text": "A billing dashboard"}, {"label": "E", "text": "A network security group rule"}], "correct": ["A", "B"], "explanation": "Azure Translator and LLM-powered translation flows are both explicitly listed translation approaches. C, D, E provide no translation capability."}, {"id": "MS29", "part": 3, "format": "multi", "domain": "Domain 4: Implement text analysis solutions", "question": "Which TWO capabilities support agentic speech interactions?", "select_n": 2, "options": [{"label": "A", "text": "Speech-to-text conversion"}, {"label": "B", "text": "Text-to-speech conversion"}, {"label": "C", "text": "Image inpainting"}, {"label": "D", "text": "DNS load balancing"}, {"label": "E", "text": "Storage tiering"}], "correct": ["A", "B"], "explanation": "Speech-to-text and text-to-speech are both explicitly listed under \"implement speech solutions\" for agentic interactions. C, D, E are unrelated capabilities."}, {"id": "MS30", "part": 3, "format": "multi", "domain": "Domain 4: Implement text analysis solutions", "question": "Which TWO outputs can generative prompting with Foundry Tools produce from unstructured text?", "select_n": 2, "options": [{"label": "A", "text": "Structured JSON output"}, {"label": "B", "text": "Extracted entities and topics"}, {"label": "C", "text": "A compiled binary executable"}, {"label": "D", "text": "A virtual network topology"}, {"label": "E", "text": "A billing invoice PDF"}], "correct": ["A", "B"], "explanation": "Structured JSON and extracted entities/topics are both explicitly listed outputs of generative prompting with Foundry Tools. C, D, E are not valid text-analysis outputs."}, {"id": "MS31", "part": 3, "format": "multi", "domain": "Domain 5: Implement information extraction solutions", "question": "Which TWO search types should you combine to implement hybrid search for grounding?", "select_n": 2, "options": [{"label": "A", "text": "Semantic/vector search"}, {"label": "B", "text": "Keyword search"}, {"label": "C", "text": "DNS-based search"}, {"label": "D", "text": "Billing search"}, {"label": "E", "text": "Network topology search"}], "correct": ["A", "B"], "explanation": "Semantic/vector and keyword search are explicitly the two components combined in hybrid search. C, D, E aren't search types at all."}, {"id": "MS32", "part": 3, "format": "multi", "domain": "Domain 5: Implement information extraction solutions", "question": "Which TWO techniques are used to extract structured fields from scanned documents with varying layouts?", "select_n": 2, "options": [{"label": "A", "text": "Optical character recognition (OCR)"}, {"label": "B", "text": "Layout analysis"}, {"label": "C", "text": "Sentiment scoring"}, {"label": "D", "text": "Speech-to-text"}, {"label": "E", "text": "Video segmentation"}], "correct": ["A", "B"], "explanation": "OCR and layout analysis are both explicitly listed as part of multimodal document extraction pipelines. C, D, E are unrelated modalities/tasks."}, {"id": "MS33", "part": 3, "format": "multi", "domain": "Domain 5: Implement information extraction solutions", "question": "Which TWO content types can be ingested and indexed as part of a retrieval/grounding pipeline?", "select_n": 2, "options": [{"label": "A", "text": "Documents"}, {"label": "B", "text": "Images"}, {"label": "C", "text": "Billing records only"}, {"label": "D", "text": "Network configurations only"}, {"label": "E", "text": "DNS zone files only"}], "correct": ["A", "B"], "explanation": "Documents and images are both explicitly listed content types for ingestion/indexing (along with audio and video). C, D, E aren't valid content types for this pipeline."}, {"id": "MS34", "part": 3, "format": "multi", "domain": "Domain 5: Implement information extraction solutions", "question": "Which TWO reasons justify connecting a retrieval pipeline directly to agent tools rather than duplicating it?", "select_n": 2, "options": [{"label": "A", "text": "Avoiding index drift between duplicate systems"}, {"label": "B", "text": "Reducing maintenance overhead"}, {"label": "C", "text": "Increasing storage cost unnecessarily"}, {"label": "D", "text": "Reducing search relevance intentionally"}, {"label": "E", "text": "Removing the need for any grounding"}], "correct": ["A", "B"], "explanation": "Avoiding index drift between duplicate systems and reducing maintenance overhead are the practical reasons the skills outline gives for connecting retrieval pipelines directly to agent tools rather than duplicating them. C, D, E are negative outcomes, not justifications."}, {"id": "MS35", "part": 3, "format": "multi", "domain": "Domain 5: Implement information extraction solutions", "question": "Which TWO outputs can Content Understanding analyzers produce for downstream LLM consumption?", "select_n": 2, "options": [{"label": "A", "text": "Structured output"}, {"label": "B", "text": "Markdown output"}, {"label": "C", "text": "A compiled video codec"}, {"label": "D", "text": "A DNS record set"}, {"label": "E", "text": "A virtual network peering configuration"}], "correct": ["A", "B"], "explanation": "Structured and markdown output are both explicitly listed Content Understanding analyzer outputs. C, D, E are not valid outputs of this capability."}, {"id": "CS1-Q1", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "Which technique should the copilot use to answer questions from Contoso's product manuals and return policy documents?", "options": [{"label": "A", "text": "Retrieval-augmented generation (RAG)"}, {"label": "B", "text": "Pure fine-tuning with no retrieval"}, {"label": "C", "text": "A static FAQ page"}, {"label": "D", "text": "Random sampling of documents"}], "correct": ["A"], "explanation": "RAG grounds answers in Contoso's own documents, minimizing hallucination \u2014 the core Domain 2 technique for this exact scenario"}, {"id": "CS1-Q2", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "Some return policy PDFs are scanned images. What must the ingestion pipeline include?", "options": [{"label": "A", "text": "Optical character recognition (OCR)"}, {"label": "B", "text": "Speech-to-text"}, {"label": "C", "text": "Video segmentation"}, {"label": "D", "text": "A translation-only step"}], "correct": ["A"], "explanation": "scanned PDFs require OCR as part of the RAG ingestion flow, per Domain 5"}, {"id": "CS1-Q3", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "To check live order status mid-conversation, what agent capability is required?", "options": [{"label": "A", "text": "Function-calling/tool integration"}, {"label": "B", "text": "Image captioning"}, {"label": "C", "text": "Sentiment analysis only"}, {"label": "D", "text": "A static lookup table"}], "correct": ["A"], "explanation": "live order status lookup mid-conversation is function-calling/tool integration, per Domain 2"}, {"id": "CS1-Q4", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "To keep all traffic off the public internet, what should be configured?", "options": [{"label": "A", "text": "Private endpoints/VNet integration"}, {"label": "B", "text": "A public IP with allow-listing only"}, {"label": "C", "text": "A CDN in front of the endpoint"}, {"label": "D", "text": "No network configuration"}], "correct": ["A"], "explanation": "private endpoints/VNet integration keep traffic off the public internet, per Domain 1 security guidance"}, {"id": "CS1-Q5", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "For refund requests over $500, what design pattern should be implemented before the agent acts?", "options": [{"label": "A", "text": "A semiautonomous workflow with approval flow controls"}, {"label": "B", "text": "Full autonomy with no human review"}, {"label": "C", "text": "Blocking all refund requests permanently"}, {"label": "D", "text": "Ignoring the dollar threshold"}], "correct": ["A"], "explanation": "a dollar-threshold escalation is a textbook semiautonomous workflow with approval controls, per Domain 2"}, {"id": "CS1-Q6", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "Leadership wants irrelevant answers flagged automatically. Which evaluation metric directly addresses this?", "options": [{"label": "A", "text": "Relevance evaluation"}, {"label": "B", "text": "Token cost"}, {"label": "C", "text": "Network latency"}, {"label": "D", "text": "Storage redundancy tier"}], "correct": ["A"], "explanation": "relevance evaluation directly flags irrelevant/off-target answers, per Domain 2 evaluation"}, {"id": "CS1-Q7", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "To handle the 5x holiday traffic spike cost-efficiently without paying for idle reserved capacity year-round, which deployment option fits best?", "options": [{"label": "A", "text": "Serverless pay-as-you-go"}, {"label": "B", "text": "Fixed, maximum-sized PTUs reserved permanently"}, {"label": "C", "text": "A single on-premises server"}, {"label": "D", "text": "No deployment; scale manually by hand each day"}], "correct": ["A"], "explanation": "serverless avoids paying for idle reserved PTU capacity during non-peak periods while still handling the 5x spike, per Domain 1 deployment guidance"}, {"id": "CS1-Q8", "part": 5, "format": "case", "domain": "Case Study 1: Contoso Retail \u2014 Customer Support Copilot", "case_background": "Contoso Retail is building an AI-powered customer support copilot in Microsoft Foundry. The copilot must answer questions using Contoso's internal product manuals and return policy documents (stored as PDFs, some scanned), check live order status via an internal REST API, and escalate to a human agent for refund requests over $500. Contoso operates in the EU and US and requires all traffic to stay off the public internet. Leadership wants to see continuous quality metrics and wants irrelevant answers flagged automatically. Support volume is highly seasonal, spiking 5x during holiday sales.", "question": "To support both EU and US customers with data residency and translation needs, which capability should be included?", "options": [{"label": "A", "text": "Azure Translator/LLM-powered translation flow"}, {"label": "B", "text": "A code-generation model"}, {"label": "C", "text": "A batch-only endpoint with no live interaction"}, {"label": "D", "text": "Disabling multilingual support entirely"}], "correct": ["A"], "explanation": "Translator/LLM-powered translation flow supports the EU/US multilingual requirement, per Domain 4"}, {"id": "CS2-Q1", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "Which capability lets engineers ask natural-language questions about a specific photo's contents?", "options": [{"label": "A", "text": "Visual question-answering grounded in visual evidence"}, {"label": "B", "text": "Text-only summarization"}, {"label": "C", "text": "Currency conversion"}, {"label": "D", "text": "DNS resolution"}], "correct": ["A"], "explanation": "visual question-answering grounded in visual evidence, per Domain 3"}, {"id": "CS2-Q2", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "To detect images with hidden malicious text embedded to fool review, what should the solution implement?", "options": [{"label": "A", "text": "Detection and mitigation of indirect prompt injection via embedded image text"}, {"label": "B", "text": "A larger context window only"}, {"label": "C", "text": "A faster GPU"}, {"label": "D", "text": "Disabling all image analysis"}], "correct": ["A"], "explanation": "indirect prompt injection via embedded image text is the exact named risk and mitigation in Domain 3's responsible AI section"}, {"id": "CS2-Q3", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "Which capability should generate the written defect report from the visual inspection?", "options": [{"label": "A", "text": "Multimodal captioning/description generation"}, {"label": "B", "text": "Speech-to-text only"}, {"label": "C", "text": "A static template with no visual input"}, {"label": "D", "text": "A billing report"}], "correct": ["A"], "explanation": "multimodal captioning/description generation produces the written defect report from visual input, per Domain 3"}, {"id": "CS2-Q4", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "For full audit trails of every automated decision, what should be implemented?", "options": [{"label": "A", "text": "Provenance metadata and trace logging"}, {"label": "B", "text": "A load balancer"}, {"label": "C", "text": "A DNS CNAME record"}, {"label": "D", "text": "A storage lifecycle policy"}], "correct": ["A"], "explanation": "provenance metadata and trace logging deliver the audit trail requirement, per Domain 1"}, {"id": "CS2-Q5", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "To scale elastically with variable shift-based production volume while controlling cost, what deployment approach fits best?", "options": [{"label": "A", "text": "Serverless/autoscaling deployment"}, {"label": "B", "text": "A single fixed-size on-premises server"}, {"label": "C", "text": "A permanently maximum-provisioned cluster regardless of load"}, {"label": "D", "text": "Manual scaling performed once per quarter"}], "correct": ["A"], "explanation": "serverless/autoscaling deployment matches variable, shift-based volume without over-provisioning, per Domain 1"}, {"id": "CS2-Q6", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "To identify specific defect regions within an image (e.g., the exact location of a crack), what capability is needed?", "options": [{"label": "A", "text": "Object/region identification within images"}, {"label": "B", "text": "Sentiment analysis"}, {"label": "C", "text": "Translation"}, {"label": "D", "text": "A DNS health probe"}], "correct": ["A"], "explanation": "object/region identification within images/video locates the specific defect, per Domain 3"}, {"id": "CS2-Q7", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "Which responsible AI control specifically addresses the risk of a tampered image being used to manipulate the model's output?", "options": [{"label": "A", "text": "Indirect prompt injection detection/mitigation"}, {"label": "B", "text": "A rate limit"}, {"label": "C", "text": "A caching layer"}, {"label": "D", "text": "A load-balancing rule"}], "correct": ["A"], "explanation": "indirect prompt injection detection directly addresses tampered-image manipulation risk, per Domain 3"}, {"id": "CS2-Q8", "part": 5, "format": "case", "domain": "Case Study 2: Fabrikam Manufacturing \u2014 Visual Inspection Agent", "case_background": "Fabrikam Manufacturing wants an AI solution that inspects photos of manufactured parts on the assembly line for defects, generates a written defect report, and flags images that appear tampered with (embedded hidden text used to fool automated review). The system must also allow engineers to ask natural-language questions about a specific inspection photo (e.g., \"Is there a crack near the top edge?\"). Fabrikam wants full audit trails of every automated decision and needs the solution to scale elastically since production volume varies by shift.", "question": "Fabrikam wants only high-confidence defect classifications to trigger an automatic stop-line alert, with lower-confidence cases routed to a human reviewer. What design pattern does this represent?", "options": [{"label": "A", "text": "A semiautonomous workflow with tiered approval based on risk/confidence"}, {"label": "B", "text": "A fully autonomous system with no human involvement"}, {"label": "C", "text": "A fully manual system with no automation"}, {"label": "D", "text": "Ignoring confidence scores entirely"}], "correct": ["A"], "explanation": "confidence-based routing to automatic action vs. human review is a semiautonomous, tiered-approval workflow, per Domain 2"}, {"id": "CS3-Q1", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To convert dictated audio visit notes into text, what capability is required?", "options": [{"label": "A", "text": "Speech-to-text"}, {"label": "B", "text": "Image inpainting"}, {"label": "C", "text": "A static template"}, {"label": "D", "text": "A DNS zone"}], "correct": ["A"], "explanation": "speech-to-text converts dictated audio notes, per Domain 4"}, {"id": "CS3-Q2", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To extract medications and diagnoses into structured JSON for the EHR, what should be implemented?", "options": [{"label": "A", "text": "Generative prompting with Foundry Tools for structured entity/JSON extraction"}, {"label": "B", "text": "A single hardcoded regular expression with no model"}, {"label": "C", "text": "A load-balancing rule"}, {"label": "D", "text": "A billing report"}], "correct": ["A"], "explanation": "generative prompting with Foundry Tools extracts structured JSON entities, per Domain 4"}, {"id": "CS3-Q3", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To ensure clinician-facing answers are strictly grounded in the patient's own chart, what technique is essential?", "options": [{"label": "A", "text": "Retrieval-augmented generation (RAG) scoped to the patient's records"}, {"label": "B", "text": "A general-purpose model with no retrieval"}, {"label": "C", "text": "Increasing temperature to maximum"}, {"label": "D", "text": "Disabling all grounding"}], "correct": ["A"], "explanation": "RAG scoped to the patient's own chart is essential to strict grounding and avoiding fabricated claims, per Domain 2"}, {"id": "CS3-Q4", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "Before showing any output to a clinician, what evaluation must run to catch fabricated medical claims?", "options": [{"label": "A", "text": "Fabrication/groundedness evaluation"}, {"label": "B", "text": "Latency evaluation only"}, {"label": "C", "text": "Cost evaluation only"}, {"label": "D", "text": "Network throughput evaluation"}], "correct": ["A"], "explanation": "fabrication/groundedness evaluation is the explicit pre-release check for factual accuracy, per Domain 2"}, {"id": "CS3-Q5", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To enforce least-privilege access to patient data by the application, what should be configured?", "options": [{"label": "A", "text": "Managed identity with narrowly scoped RBAC roles"}, {"label": "B", "text": "A shared administrator account for all services"}, {"label": "C", "text": "Public anonymous access"}, {"label": "D", "text": "A single global API key with full access"}], "correct": ["A"], "explanation": "managed identity with narrowly scoped RBAC enforces least privilege, per Domain 1 security guidance"}, {"id": "CS3-Q6", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To translate visit summaries for non-English-speaking patients, what should be used?", "options": [{"label": "A", "text": "Azure Translator in Foundry Tools or an LLM-powered translation flow"}, {"label": "B", "text": "A code-generation model"}, {"label": "C", "text": "A vector index with no translation logic"}, {"label": "D", "text": "A DNS record"}], "correct": ["A"], "explanation": "Translator/LLM-powered translation flow supports non-English patient summaries, per Domain 4"}, {"id": "CS3-Q7", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "Northwind wants a complete, auditable record of which chart sections informed each generated answer. What should be implemented?", "options": [{"label": "A", "text": "Provenance metadata and trace logging"}, {"label": "B", "text": "A caching layer only"}, {"label": "C", "text": "A CDN"}, {"label": "D", "text": "A load balancer"}], "correct": ["A"], "explanation": "provenance metadata and trace logging create the auditable record of which chart sections informed each answer, per Domain 1"}, {"id": "CS3-Q8", "part": 5, "format": "case", "domain": "Case Study 3: Northwind Health \u2014 Clinical Documentation Assistant", "case_background": "Northwind Health is building an agent that helps clinicians summarize patient visit notes (dictated as audio), extract structured data (medications, diagnoses) into JSON for the EHR system, and answer clinician questions grounded strictly in the patient's own chart to avoid fabricated medical claims. All model outputs must be evaluated for factual grounding before being shown to clinicians, and access must follow strict least-privilege identity controls. The system must also translate visit summaries for non-English-speaking patients.", "question": "To keep patient data traffic off the public internet between the application and Foundry, what should be configured?", "options": [{"label": "A", "text": "Private endpoints/VNet integration"}, {"label": "B", "text": "A public endpoint with IP allow-listing only"}, {"label": "C", "text": "A CDN"}, {"label": "D", "text": "No network restriction\n\n---\n\n# ANSWER KEY \u2014 PARTS 3, 4, AND 5"}], "correct": ["A"], "explanation": "private endpoints/VNet integration keep patient data off the public internet, per Domain 1"}, {"id": "GF1", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "You need to produce a short marketing video from a text prompt and a reference product image. Which capability should you use?", "options": [{"label": "A", "text": "Video generation from text prompts and reference media"}, {"label": "B", "text": "Object/region identification within video"}, {"label": "C", "text": "Video segmentation only"}, {"label": "D", "text": "Speech-to-text"}], "correct": ["A"], "explanation": "This is explicitly \"implement a solution that generates videos from text prompts and reference media,\" distinct from analyzing existing video. B and C analyze video that already exists; D is unrelated."}, {"id": "GF2", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "After generating a short product video, you need to modify a specific scene without regenerating the entire clip. What should you use?", "options": [{"label": "A", "text": "Workflows to edit generated videos"}, {"label": "B", "text": "OCR"}, {"label": "C", "text": "Sentiment analysis"}, {"label": "D", "text": "A billing report"}], "correct": ["A"], "explanation": "This is explicitly \"implement workflows to edit generated videos,\" the video equivalent of image inpainting. B\u2013D are unrelated capabilities."}, {"id": "GF3", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "You need your application to automatically produce both a one-line caption and a detailed paragraph description for a batch of uploaded images, independent of any accessibility requirement. What should you configure?", "options": [{"label": "A", "text": "Concise and detailed caption generation for single or multiple images"}, {"label": "B", "text": "Alt-text generation only, for accessibility compliance"}, {"label": "C", "text": "Sentiment scoring"}, {"label": "D", "text": "A DNS zone"}], "correct": ["A"], "explanation": "This is explicitly \"configure apps to produce concise or detailed captions for single or multiple images\" \u2014 a general-purpose captioning capability distinct from the accessibility-specific alt-text skill (which is also real, tested elsewhere in this guide, but is a separate bullet). B describes the accessibility-specific variant, not the general one asked for here."}, {"id": "GF4", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "Your brand team needs generated marketing images to automatically carry a watermark, and any image containing a competitor's logo or a prohibited symbol should be flagged. What should you implement?", "options": [{"label": "A", "text": "Visual policy rules enforcing watermarks, brand usage, and prohibited-symbol detection"}, {"label": "B", "text": "A rate limit on the deployment"}, {"label": "C", "text": "A caching layer"}, {"label": "D", "text": "A load-balancer health probe"}], "correct": ["A"], "explanation": "This is explicitly \"enforce visual policy rules, such as applying watermarks, flagging prohibited symbols, upholding brand usage requirements, and detecting potentially inappropriate content\" \u2014 a distinct responsible-AI bullet from general unsafe-content filtering. B, C, D are unrelated infrastructure controls."}, {"id": "GF5", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "A multinational support line needs a caller's spoken English question translated into spoken French for a non-English-speaking agent, in near real time. What capability should you implement?", "options": [{"label": "A", "text": "Translating speech into other languages using language models and Foundry Tools"}, {"label": "B", "text": "Text-only translation with no audio support"}, {"label": "C", "text": "Image captioning"}, {"label": "D", "text": "A DNS-based routing rule"}], "correct": ["A"], "explanation": "This is explicitly \"translate speech into other languages by using language models and Foundry Tools\" \u2014 the speech-to-speech translation bullet, distinct from text translation (tested elsewhere in this guide) and from plain speech-to-text. B, C, D don't address spoken-language translation."}, {"id": "GF6", "part": 7, "format": "single", "domain": "Gap-Fill Supplement", "question": "Your agent must recognize a specific executive's voice profile and terminology accurately as an input modality, beyond generic speech-to-text. What should you integrate?", "options": [{"label": "A", "text": "Custom speech models as an agent modality"}, {"label": "B", "text": "A generic, unmodified speech-to-text model only"}, {"label": "C", "text": "Image inpainting"}, {"label": "D", "text": "A billing dashboard"}], "correct": ["A"], "explanation": "This is explicitly \"integrate speech as an agent modality, including custom speech models\" \u2014 customization for specific voices/vocabularies beyond the generic pipeline. B underperforms for specialized recognition needs; C and D are unrelated."}];
+const DIAGRAMS = [{"id": "rag_pipeline", "title": "Retrieval-augmented generation (RAG) pipeline", "caption": "The standard ingest \u2192 chunk \u2192 embed \u2192 index \u2192 retrieve \u2192 augment \u2192 generate flow that grounds a model's response in your own data, reducing hallucination.", "svg": "<svg viewBox=\"0 0 760 322\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;max-width:760px;\">\n<rect x=\"0\" y=\"0\" width=\"760\" height=\"322\" fill=\"white\"/>\n\n<defs>\n  <marker id=\"arrowend\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\" markerUnits=\"strokeWidth\">\n    <path d=\"M0,0 L0,6 L9,3 z\" fill=\"#605e5c\"/>\n  </marker>\n</defs>\n\n<text x=\"380.0\" y=\"26\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#005a9e\" font-family=\"Segoe UI, Arial, sans-serif\">Retrieval-Augmented Generation (RAG) Pipeline</text>\n\n<g transform=\"translate(0,40)\">\n<rect x=\"20\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f3f2f1\" stroke=\"#c8c6c4\" stroke-width=\"1.6\"/>\n<text x=\"75.0\" y=\"118.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Source content</text>\n<text x=\"75.0\" y=\"134.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Docs, images, audio</text>\n<line x1=\"130\" y1=\"120\" x2=\"175\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"134.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"152.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">OCR/ingest</text>\n<rect x=\"175\" y=\"90\" width=\"100\" height=\"60\" rx=\"8\" fill=\"#eff6fc\" stroke=\"#0078d4\" stroke-width=\"1.6\"/>\n<text x=\"225.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Chunk + embed</text>\n<line x1=\"275\" y1=\"120\" x2=\"320\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"320\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f2edf9\" stroke=\"#5c2d91\" stroke-width=\"1.6\"/>\n<text x=\"375.0\" y=\"111.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Vector / hybrid</text>\n<text x=\"375.0\" y=\"125.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">index</text>\n<text x=\"375.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">e.g., Azure AI</text>\n<text x=\"375.0\" y=\"153.5\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Search</text>\n<line x1=\"430\" y1=\"120\" x2=\"475\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"434.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"452.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">retrieve</text>\n<rect x=\"475\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"530.0\" y=\"117.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Top-k relevant</text>\n<text x=\"530.0\" y=\"131.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">chunks</text>\n<line x1=\"585\" y1=\"120\" x2=\"630\" y2=\"120\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"589.05\" y=\"107.5\" width=\"36.9\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"607.5\" y=\"121.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">augment prompt</text>\n<rect x=\"630\" y=\"90\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#fff4ce\" stroke=\"#b25000\" stroke-width=\"1.6\"/>\n<text x=\"685.0\" y=\"124.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">LLM generates</text>\n<path d=\"M 685 90 Q 760 60 685 40\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\" stroke-dasharray=\"6,4\" marker-end=\"url(#arrowend)\"/>\n<text x=\"700\" y=\"30\" text-anchor=\"end\" font-size=\"10.5\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Grounded, cited response</text>\n<text x=\"380\" y=\"200\" text-anchor=\"middle\" font-size=\"11\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">The query is embedded the same way as the documents, so retrieval finds semantically</text>\n<text x=\"380\" y=\"216\" text-anchor=\"middle\" font-size=\"11\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">similar chunks even without exact keyword matches \u2014 this is what \"grounds\" the response.</text>\n\n</g>\n<text x=\"380.0\" y=\"314\" text-anchor=\"middle\" font-size=\"9.5\" fill=\"#605e5c\" font-style=\"italic\" font-family=\"Segoe UI, Arial, sans-serif\">Source: Microsoft Learn \u2014 RAG pattern using Azure AI Search + Azure OpenAI</text>\n\n</svg>"}, {"id": "agent_architecture", "title": "Agent architecture: orchestrator, tools, and memory", "caption": "How an agent coordinates function-calling, knowledge/search tools, and conversation memory around a reasoning loop with the model \u2014 the mental model behind most AI-103 agent-building questions.", "svg": "<svg viewBox=\"0 0 700 382\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;max-width:700px;\">\n<rect x=\"0\" y=\"0\" width=\"700\" height=\"382\" fill=\"white\"/>\n\n<defs>\n  <marker id=\"arrowend\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\" markerUnits=\"strokeWidth\">\n    <path d=\"M0,0 L0,6 L9,3 z\" fill=\"#605e5c\"/>\n  </marker>\n</defs>\n\n<text x=\"350.0\" y=\"26\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#005a9e\" font-family=\"Segoe UI, Arial, sans-serif\">Foundry Agent Architecture</text>\n\n<g transform=\"translate(0,40)\">\n<rect x=\"20\" y=\"130\" width=\"110\" height=\"60\" rx=\"8\" fill=\"#f3f2f1\" stroke=\"#c8c6c4\" stroke-width=\"1.6\"/>\n<text x=\"75.0\" y=\"164.5\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">User</text>\n<line x1=\"130\" y1=\"160\" x2=\"180\" y2=\"160\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"134.5\" y=\"147.5\" width=\"41.0\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"155.0\" y=\"161.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">message</text>\n<rect x=\"180\" y=\"110\" width=\"150\" height=\"100\" rx=\"8\" fill=\"#eff6fc\" stroke=\"#0078d4\" stroke-width=\"1.6\"/>\n<text x=\"255.0\" y=\"158.5\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Agent orchestrator</text>\n<text x=\"255.0\" y=\"175.5\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Role, goals, tool schemas,</text>\n<text x=\"255.0\" y=\"188.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">conversation memory</text>\n<path d=\"M 330 130 Q 360 90 380 60\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"324.73046640512524\" y=\"77.5\" width=\"70.53906718974955\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"360\" y=\"91\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">function call</text>\n<path d=\"M 330 190 Q 360 230 380 260\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"324.73046640512524\" y=\"217.5\" width=\"70.53906718974955\" height=\"16.5\" fill=\"white\" opacity=\"0.92\"/>\n<text x=\"360\" y=\"231\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">knowledge search</text>\n<rect x=\"380\" y=\"20\" width=\"150\" height=\"45\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"455.0\" y=\"46.5\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Custom function / API</text>\n<rect x=\"380\" y=\"255\" width=\"150\" height=\"45\" rx=\"8\" fill=\"#dff6dd\" stroke=\"#107c10\" stroke-width=\"1.6\"/>\n<text x=\"455.0\" y=\"274.5\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">Search / knowledge</text>\n<text x=\"455.0\" y=\"288.5\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">store</text>\n<path d=\"M 530 50 Q 580 80 590 130\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<path d=\"M 530 270 Q 580 240 590 190\" fill=\"none\" stroke=\"#605e5c\" stroke-width=\"1.8\"  marker-end=\"url(#arrowend)\"/>\n<rect x=\"590\" y=\"130\" width=\"90\" height=\"60\" rx=\"8\" fill=\"#fff4ce\" stroke=\"#b25000\" stroke-width=\"1.6\"/>\n<text x=\"635.0\" y=\"165.0\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"600\" fill=\"#201f1e\" font-family=\"Segoe UI, Arial, sans-serif\">LLM</text>\n<path d=\"M 590 160 Q 470 110 340 150\" fill=\"none\" stroke=\"#5c2d91\" stroke-width=\"1.8\" stroke-dasharray=\"6,4\" marker-end=\"url(#arrowend)\"/>\n<text x=\"455\" y=\"100\" text-anchor=\"middle\" font-size=\"10\"  font-style=\"italic\" fill=\"#5c2d91\" font-family=\"Segoe UI, Arial, sans-serif\">reasoning loop</text>\n<text x=\"350\" y=\"305\" text-anchor=\"middle\" font-size=\"11\"   fill=\"#605e5c\" font-family=\"Segoe UI, Arial, sans-serif\">Oversight modes and tool-access controls gate high-risk actions before the agent executes them.</text>\n\n</g>\n<text x=\"350.0\" y=\"374\" text-anchor=\"middle\" font-size=\"9.5\" fill=\"#605e5c\" font-style=\"italic\" font-family=\"Segoe UI, Arial, sans-serif\">Source: Microsoft Learn \u2014 Microsoft Foundry Agent Service concepts</text>\n\n</svg>"}];
+
+// Some mobile browsers throw when a page is opened via file:// (or in an
+// in-app/private browser) and script touches localStorage. Wrap every access
+// so a blocked storage API degrades to in-memory state instead of crashing
+// the whole script (which would otherwise leave the question view blank).
+const memoryStore = {};
+let storageBlocked = false;
+function safeGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { storageBlocked = true; return memoryStore[key] || null; }
+}
+function safeSet(key, val) {
+  try { localStorage.setItem(key, val); } catch (e) { storageBlocked = true; memoryStore[key] = val; }
+}
+
+let state = {
+  order: [],
+  idx: 0,
+  answered: (() => { try { return JSON.parse(safeGet('quiz_progress_' + EXAM_CODE) || '{}'); } catch (e) { return {}; } })(),
+  filterDomain: 'all',
+  filterFormat: 'all',
+  shuffle: false,
+  reviewMode: false,
+  currentSelection: [],
+  locked: false,
+};
+
+function saveProgress() {
+  safeSet('quiz_progress_' + EXAM_CODE, JSON.stringify(state.answered));
+}
+
+function uniqueDomains() {
+  const seen = [];
+  QUESTIONS.forEach(q => { if (!seen.includes(q.domain)) seen.push(q.domain); });
+  return seen;
+}
+
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildOrder() {
+  let list = QUESTIONS.filter(q =>
+    (state.filterDomain === 'all' || q.domain === state.filterDomain) &&
+    (state.filterFormat === 'all' || q.format === state.filterFormat)
+  );
+  if (state.reviewMode) {
+    list = list.filter(q => state.answered[q.id] && state.answered[q.id].correct === false);
+  }
+  if (state.shuffle) list = shuffleArr(list);
+  state.order = list;
+  state.idx = 0;
+}
+
+function initFilters() {
+  const domSel = document.getElementById('domainFilter');
+  domSel.innerHTML = '<option value="all">All domains</option>' +
+    uniqueDomains().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  domSel.addEventListener('change', () => { state.filterDomain = domSel.value; buildOrder(); render(); });
+  document.getElementById('formatFilter').addEventListener('change', (e) => { state.filterFormat = e.target.value; buildOrder(); render(); });
+  document.getElementById('shuffleToggle').addEventListener('change', (e) => { state.shuffle = e.target.checked; buildOrder(); render(); });
+  document.getElementById('reviewToggle').addEventListener('change', (e) => { state.reviewMode = e.target.checked; buildOrder(); render(); });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('Reset all saved progress for this exam?')) {
+      state.answered = {}; saveProgress(); buildOrder(); render();
+    }
+  });
+  document.getElementById('prevBtn').addEventListener('click', () => { if (state.idx > 0) { state.idx--; render(); } });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (state.idx < state.order.length - 1) { state.idx++; render(); } else { showSummary(); }
+  });
+  document.getElementById('checkBtn').addEventListener('click', checkMulti);
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    document.getElementById('summary').classList.remove('show');
+    document.getElementById('card').style.display = 'block';
+    document.querySelector('.controls').style.display = 'flex';
+    state.idx = 0; render();
+  });
+}
+
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+function formatLabel(f) { return {single:'Single-answer', multi:'Multi-select', case:'Case study'}[f] || f; }
+
+function render() {
+  document.getElementById('card').style.display = 'block';
+  document.getElementById('summary').classList.remove('show');
+  if (state.order.length === 0) {
+    document.getElementById('qtext').textContent = 'No questions match the current filters.';
+    document.getElementById('options').innerHTML = '';
+    document.getElementById('bgBox').style.display = 'none';
+    document.getElementById('feedback').className = '';
+    updateStats();
+    return;
+  }
+  if (state.idx >= state.order.length) state.idx = state.order.length - 1;
+  const q = state.order[state.idx];
+  const prior = state.answered[q.id];
+
+  document.getElementById('bDomain').textContent = q.domain;
+  document.getElementById('bFormat').textContent = formatLabel(q.format) + (q.format === 'multi' ? ` (select ${q.select_n})` : '');
+  document.getElementById('qtext').textContent = q.question;
+
+  const bg = document.getElementById('bgBox');
+  if (q.format === 'case' && q.case_background) {
+    bg.style.display = 'block';
+    bg.innerHTML = '<b>Scenario background:</b> ' + escapeHtml(q.case_background);
+  } else {
+    bg.style.display = 'none';
+  }
+
+  state.currentSelection = prior ? prior.selected.slice() : [];
+  state.locked = !!prior;
+
+  const optsDiv = document.getElementById('options');
+  optsDiv.innerHTML = '';
+  q.options.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.dataset.label = opt.label;
+    const isMulti = q.format === 'multi';
+    div.innerHTML = (isMulti ? `<input type="checkbox" ${state.currentSelection.includes(opt.label)?'checked':''}>` : '') +
+      `<span class="letter">${opt.label})</span><span>${escapeHtml(opt.text)}</span>`;
+    if (!isMulti) {
+      div.addEventListener('click', () => selectSingle(q, opt.label));
+    } else {
+      div.addEventListener('click', (e) => {
+        if (state.locked) return;
+        toggleMulti(opt.label);
+        render();
+      });
+    }
+    optsDiv.appendChild(div);
+  });
+
+  document.getElementById('checkBtn').style.display = (q.format === 'multi' && !state.locked) ? 'inline-block' : 'none';
+  document.getElementById('multiHint').style.display = (q.format === 'multi' && !state.locked) ? 'block' : 'none';
+  document.getElementById('multiHint').textContent = `Select exactly ${q.select_n} option(s), then click Check Answer.`;
+
+  const fb = document.getElementById('feedback');
+  if (prior) {
+    applyFeedbackStyles(q, prior.selected);
+    showFeedback(q, prior.correct);
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    document.getElementById('checkBtn').style.display = 'none';
+  } else {
+    fb.className = ''; fb.innerHTML = '';
+    document.getElementById('nextBtn').style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = state.idx === 0;
+  updateStats();
+}
+
+function toggleMulti(label) {
+  const i = state.currentSelection.indexOf(label);
+  if (i >= 0) state.currentSelection.splice(i, 1);
+  else state.currentSelection.push(label);
+}
+
+function selectSingle(q, label) {
+  if (state.locked) return;
+  const correctSet = q.correct;
+  const isCorrect = correctSet.length === 1 && correctSet[0] === label;
+  state.answered[q.id] = { selected: [label], correct: isCorrect };
+  saveProgress();
+  render();
+}
+
+function checkMulti() {
+  const q = state.order[state.idx];
+  const sel = state.currentSelection.slice().sort();
+  const correct = q.correct.slice().sort();
+  const isCorrect = sel.length === correct.length && sel.every((v, i) => v === correct[i]);
+  state.answered[q.id] = { selected: sel, correct: isCorrect };
+  saveProgress();
+  render();
+}
+
+function applyFeedbackStyles(q, selected) {
+  const opts = document.querySelectorAll('#options .opt');
+  opts.forEach(div => {
+    const label = div.dataset.label;
+    div.classList.add('locked');
+    const isCorrectOpt = q.correct.includes(label);
+    const wasSelected = selected.includes(label);
+    if (isCorrectOpt && wasSelected) div.classList.add('correct');
+    else if (isCorrectOpt && !wasSelected) div.classList.add('missed');
+    else if (!isCorrectOpt && wasSelected) div.classList.add('incorrect');
+    const cb = div.querySelector('input[type=checkbox]');
+    if (cb) cb.disabled = true;
+  });
+}
+
+function showFeedback(q, isCorrect) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  const correctText = q.correct.map(l => {
+    const o = q.options.find(o => o.label === l);
+    return `${l}) ${o ? o.text : ''}`;
+  }).join('; ');
+  fb.innerHTML = `<div class="fb-title ${isCorrect ? 'ok' : 'bad'}">${isCorrect ? '✓ Correct!' : '✗ Not quite.'}</div>` +
+    `<div><b>Correct answer${q.correct.length>1?'s':''}:</b> ${escapeHtml(correctText)}</div>` +
+    `<div style="margin-top:8px;">${escapeHtml(q.explanation)}</div>`;
+}
+
+function updateStats() {
+  const answeredIds = Object.keys(state.answered);
+  const totalAnswered = answeredIds.length;
+  const totalCorrect = answeredIds.filter(id => state.answered[id].correct).length;
+  document.getElementById('stAnswered').textContent = totalAnswered;
+  document.getElementById('stCorrect').textContent = totalCorrect;
+  document.getElementById('stAccuracy').textContent = totalAnswered ? Math.round(100*totalCorrect/totalAnswered) + '%' : '—';
+  document.getElementById('stRemaining').textContent = Math.max(0, state.order.length - state.idx - (state.answered[state.order[state.idx] && state.order[state.idx].id] ? 1 : 0));
+  const pct = state.order.length ? Math.round(100 * (state.idx + (state.answered[state.order[state.idx] && state.order[state.idx].id]?1:0)) / state.order.length) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function showSummary() {
+  document.getElementById('card').style.display = 'none';
+  const s = document.getElementById('summary');
+  s.classList.add('show');
+  const ids = Object.keys(state.answered);
+  const total = ids.length;
+  const correct = ids.filter(id => state.answered[id].correct).length;
+  document.getElementById('summaryLine').textContent =
+    `You've answered ${total} question(s) so far in this session, ${correct} correct (${total?Math.round(100*correct/total):0}%).`;
+  const byDomain = {};
+  QUESTIONS.forEach(q => {
+    if (!state.answered[q.id]) return;
+    byDomain[q.domain] = byDomain[q.domain] || {c:0,t:0};
+    byDomain[q.domain].t++;
+    if (state.answered[q.id].correct) byDomain[q.domain].c++;
+  });
+  const bd = document.getElementById('domainBreakdown');
+  bd.innerHTML = Object.keys(byDomain).map(d => {
+    const {c,t} = byDomain[d];
+    return `<div class="domainrow"><span>${escapeHtml(d)}</span><span>${c}/${t} (${Math.round(100*c/t)}%)</span></div>`;
+  }).join('') || '<p>No questions answered yet.</p>';
+}
+
+function renderDiagrams() {
+  const gal = document.getElementById('diagramGallery');
+  gal.innerHTML = DIAGRAMS.map(d => `
+    <div class="diagram-card">
+      <h3>${escapeHtml(d.title)}</h3>
+      <div class="cap">${escapeHtml(d.caption)}</div>
+      <div class="svgwrap">${d.svg}</div>
+    </div>
+  `).join('') || '<p>No diagrams for this exam yet.</p>';
+}
+
+function initTabs() {
+  const quizBtn = document.getElementById('tabQuizBtn');
+  const diagBtn = document.getElementById('tabDiagramBtn');
+  const gameBtn = document.getElementById('tabGameBtn');
+  const quizView = document.getElementById('quizView');
+  const diagView = document.getElementById('diagramView');
+  const gameView = document.getElementById('gameView');
+  const all = [[quizBtn, quizView], [diagBtn, diagView], [gameBtn, gameView]];
+  function activate(target) {
+    all.forEach(([btn, view]) => {
+      const on = btn === target;
+      btn.classList.toggle('active', on);
+      view.style.display = on ? 'block' : 'none';
+    });
+  }
+  quizBtn.addEventListener('click', () => activate(quizBtn));
+  diagBtn.addEventListener('click', () => activate(diagBtn));
+  gameBtn.addEventListener('click', () => activate(gameBtn));
+}
+
+// =================================================================
+// DOMAIN MASTERY CHALLENGE — game engine
+// Pure logic functions (no DOM access) are kept separate from the
+// DOM-driving functions below so they can be unit-tested in isolation.
+// =================================================================
+
+// Only single/multi questions tagged with a real skills-measured domain
+// (excludes "Gap-Fill Supplement" and case-study titles, which aren't
+// official exam domains) are eligible for the game.
+const GAME_POOL = QUESTIONS.filter(q => (q.format === 'single' || q.format === 'multi') && /^Domain \d+:/.test(q.domain));
+const GAME_DOMAINS = [...new Set(GAME_POOL.map(q => q.domain))];
+const MASTERY_KEY = 'game_mastery_' + EXAM_CODE;
+const TIME_PER_Q = 30;
+const MASTERY_THRESHOLD = 0.8;
+const MASTERY_MIN_ATTEMPTS = 8;
+
+function loadMastery() {
+  try { return JSON.parse(safeGet(MASTERY_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveMastery(m) { safeSet(MASTERY_KEY, JSON.stringify(m)); }
+
+// Weight is highest for domains never attempted (to guarantee early
+// coverage of every domain) and falls as accuracy rises, so weaker
+// domains are served more often — the same weak-spot-first principle
+// spaced-repetition tools use. Floor of 0.4 keeps mastered domains from
+// disappearing entirely (occasional retention checks).
+function domainWeight(entry) {
+  const acc = (!entry || entry.total === 0) ? 0.5 : entry.correct / entry.total;
+  return Math.max(0.4, 0.4 + (1 - acc) * 3);
+}
+
+function pickWeightedQuestion(pool, mastery, excludeIds) {
+  const avail = pool.filter(q => !excludeIds.has(q.id));
+  if (avail.length === 0) return null;
+  const weights = avail.map(q => domainWeight(mastery[q.domain]));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < avail.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return avail[i];
+  }
+  return avail[avail.length - 1];
+}
+
+function isAnswerCorrect(selected, correct) {
+  const s = selected.slice().sort();
+  const c = correct.slice().sort();
+  return s.length === c.length && s.every((v, i) => v === c[i]);
+}
+
+function updateMasteryObj(mastery, domain, isCorrect) {
+  mastery[domain] = mastery[domain] || { correct: 0, total: 0 };
+  mastery[domain].total += 1;
+  if (isCorrect) mastery[domain].correct += 1;
+  return mastery;
+}
+
+function scoreForAnswer(streakBefore, isCorrect) {
+  if (!isCorrect) return { points: 0, newStreak: 0 };
+  const multiplier = 1 + Math.min(streakBefore, 5) * 0.2;
+  return { points: Math.round(100 * multiplier), newStreak: streakBefore + 1 };
+}
+
+function masteryStatus(entry) {
+  if (!entry || entry.total === 0) return 'new';
+  const acc = entry.correct / entry.total;
+  if (acc >= MASTERY_THRESHOLD && entry.total >= MASTERY_MIN_ATTEMPTS) return 'mastered';
+  return 'learning';
+}
+
+// ---- DOM-driving layer ----
+
+let game = null; // set on Start Round
+
+function renderMasteryList(containerId) {
+  const mastery = loadMastery();
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (GAME_DOMAINS.length === 0) { el.innerHTML = '<p>No domain-tagged questions available for this exam yet.</p>'; return; }
+  el.innerHTML = GAME_DOMAINS.map(d => {
+    const entry = mastery[d];
+    const acc = entry && entry.total ? Math.round(100 * entry.correct / entry.total) : 0;
+    const status = masteryStatus(entry);
+    const barColor = status === 'mastered' ? 'var(--green)' : (status === 'learning' ? 'var(--amber)' : 'var(--border)');
+    const badgeText = status === 'mastered' ? 'Mastered' : (status === 'learning' ? 'Learning' : 'Not started');
+    return `<div class="mastery-row">
+      <span class="dname">${escapeHtml(d)}</span>
+      <span class="mastery-badge ${status}">${badgeText}</span>
+      <div class="mastery-bar"><div style="width:${acc}%;background:${barColor};"></div></div>
+      <span class="mastery-pct">${entry ? entry.correct + '/' + entry.total : '0/0'}</span>
+    </div>`;
+  }).join('');
+}
+
+function startGame() {
+  if (GAME_POOL.length === 0) return;
+  game = {
+    lives: 3, score: 0, streak: 0, bestStreak: 0, seen: 0,
+    excludeIds: new Set(), mastery: loadMastery(),
+    currentQ: null, selection: [], locked: false, timeLeft: TIME_PER_Q, timerHandle: null,
+  };
+  document.getElementById('gameStart').style.display = 'none';
+  document.getElementById('gameOver').style.display = 'none';
+  document.getElementById('gamePlay').style.display = 'block';
+  nextGameQuestion();
+}
+
+function endGame(reason) {
+  clearInterval(game.timerHandle);
+  saveMastery(game.mastery);
+  document.getElementById('gamePlay').style.display = 'none';
+  document.getElementById('gameOver').style.display = 'block';
+  document.getElementById('gOverTitle').textContent = reason === 'cleared' ? 'Pool Cleared!' : 'Round Complete';
+  document.getElementById('gOverLine').textContent =
+    `Final score: ${game.score} · Questions seen: ${game.seen} · Best streak: ${game.bestStreak}`;
+  renderMasteryList('gOverMastery');
+}
+
+function nextGameQuestion() {
+  const q = pickWeightedQuestion(GAME_POOL, game.mastery, game.excludeIds);
+  if (!q) { endGame('cleared'); return; }
+  game.currentQ = q;
+  game.excludeIds.add(q.id);
+  game.selection = [];
+  game.locked = false;
+  game.timeLeft = TIME_PER_Q;
+
+  document.getElementById('gDomain').textContent = q.domain;
+  document.getElementById('gFormat').textContent = formatLabel(q.format) + (q.format === 'multi' ? ` (select ${q.select_n})` : '');
+  document.getElementById('gQtext').textContent = q.question;
+
+  const optsDiv = document.getElementById('gOptions');
+  optsDiv.innerHTML = '';
+  q.options.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.dataset.label = opt.label;
+    const isMulti = q.format === 'multi';
+    div.innerHTML = (isMulti ? `<input type="checkbox">` : '') +
+      `<span class="letter">${opt.label})</span><span>${escapeHtml(opt.text)}</span>`;
+    div.addEventListener('click', () => {
+      if (game.locked) return;
+      if (isMulti) {
+        const i = game.selection.indexOf(opt.label);
+        if (i >= 0) game.selection.splice(i, 1); else game.selection.push(opt.label);
+        const cb = div.querySelector('input[type=checkbox]');
+        if (cb) cb.checked = game.selection.includes(opt.label);
+      } else {
+        game.selection = [opt.label];
+        submitGameAnswer();
+      }
+    });
+    optsDiv.appendChild(div);
+  });
+
+  document.getElementById('gCheckBtn').style.display = q.format === 'multi' ? 'inline-block' : 'none';
+  document.getElementById('gMultiHint').style.display = q.format === 'multi' ? 'block' : 'none';
+  document.getElementById('gMultiHint').textContent = `Select exactly ${q.select_n} option(s), then click Check Answer.`;
+  document.getElementById('gContinueBtn').style.display = 'none';
+  document.getElementById('gFeedback').className = '';
+  document.getElementById('gFeedback').innerHTML = '';
+
+  updateGameStatbar();
+  startGameTimer();
+}
+
+function startGameTimer() {
+  clearInterval(game.timerHandle);
+  updateTimerBar();
+  game.timerHandle = setInterval(() => {
+    game.timeLeft -= 1;
+    updateTimerBar();
+    if (game.timeLeft <= 0) {
+      clearInterval(game.timerHandle);
+      submitGameAnswer(true);
+    }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = Math.max(0, Math.round(100 * game.timeLeft / TIME_PER_Q));
+  const fill = document.getElementById('gTimerFill');
+  fill.style.width = pct + '%';
+  document.getElementById('gTimerBar').classList.toggle('low', game.timeLeft <= 10);
+}
+
+function submitGameAnswer(timedOut) {
+  if (game.locked) return;
+  game.locked = true;
+  clearInterval(game.timerHandle);
+  const q = game.currentQ;
+  const isCorrect = !timedOut && game.selection.length > 0 && isAnswerCorrect(game.selection, q.correct);
+  updateMasteryObj(game.mastery, q.domain, isCorrect);
+  const { points, newStreak } = scoreForAnswer(game.streak, isCorrect);
+  game.score += points;
+  game.streak = newStreak;
+  game.bestStreak = Math.max(game.bestStreak, game.streak);
+  game.seen += 1;
+  if (!isCorrect) game.lives -= 1;
+
+  const opts = document.querySelectorAll('#gOptions .opt');
+  opts.forEach(div => {
+    const label = div.dataset.label;
+    const isCorrectOpt = q.correct.includes(label);
+    const wasSelected = game.selection.includes(label);
+    if (isCorrectOpt && wasSelected) div.classList.add('correct');
+    else if (isCorrectOpt && !wasSelected) div.classList.add('missed');
+    else if (!isCorrectOpt && wasSelected) div.classList.add('incorrect');
+    const cb = div.querySelector('input[type=checkbox]');
+    if (cb) cb.disabled = true;
+  });
+
+  const correctText = q.correct.map(l => {
+    const o = q.options.find(o => o.label === l);
+    return `${l}) ${o ? o.text : ''}`;
+  }).join('; ');
+  const fb = document.getElementById('gFeedback');
+  fb.className = 'show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  const titleText = timedOut ? '⏱ Time\'s up!' : (isCorrect ? '✓ Correct!' : '✗ Not quite.');
+  const streakNote = isCorrect && newStreak >= 2 ? ` <span class="streakflash">+${points} pts (streak ${newStreak}!)</span>` : (isCorrect ? ` <span class="streakflash">+${points} pts</span>` : '');
+  fb.innerHTML = `<div class="fb-title ${isCorrect ? 'ok' : 'bad'}">${titleText}${streakNote}</div>` +
+    `<div><b>Correct answer${q.correct.length > 1 ? 's' : ''}:</b> ${escapeHtml(correctText)}</div>` +
+    `<div style="margin-top:8px;">${escapeHtml(q.explanation)}</div>`;
+
+  document.getElementById('gCheckBtn').style.display = 'none';
+  document.getElementById('gContinueBtn').style.display = 'inline-block';
+  updateGameStatbar();
+
+  if (game.lives <= 0) {
+    document.getElementById('gContinueBtn').onclick = () => endGame('outoflives');
+  } else {
+    document.getElementById('gContinueBtn').onclick = () => nextGameQuestion();
+  }
+}
+
+function updateGameStatbar() {
+  document.getElementById('gLives').innerHTML = '❤️'.repeat(Math.max(0, game.lives)) + '<span class="lost">' + '🖤'.repeat(Math.max(0, 3 - game.lives)) + '</span>';
+  document.getElementById('gScore').textContent = game.score;
+  document.getElementById('gStreak').textContent = game.streak;
+  document.getElementById('gSeen').textContent = game.seen;
+}
+
+function initGame() {
+  renderMasteryList('masteryPreview');
+  document.getElementById('startGameBtn').addEventListener('click', startGame);
+  document.getElementById('gCheckBtn').addEventListener('click', () => submitGameAnswer(false));
+  document.getElementById('playAgainBtn').addEventListener('click', () => {
+    document.getElementById('gameOver').style.display = 'none';
+    document.getElementById('gameStart').style.display = 'block';
+    renderMasteryList('masteryPreview');
+  });
+  document.getElementById('resetMasteryBtn').addEventListener('click', () => {
+    if (confirm('Reset all Domain Mastery Challenge progress for this exam?')) {
+      saveMastery({});
+      renderMasteryList('masteryPreview');
+      renderMasteryList('gOverMastery');
+    }
+  });
+  if (GAME_POOL.length === 0) {
+    document.getElementById('startGameBtn').disabled = true;
+    document.getElementById('startGameBtn').textContent = 'No game questions available';
+  }
+}
+
+// Run each init phase independently: if one throws (e.g. an unexpected
+// browser quirk), the others still run instead of the whole page going
+// blank. Any failure is also surfaced visibly instead of failing silently,
+// so a broken phase is diagnosable instead of just looking "dead".
+function safeRun(label, fn) {
+  try { fn(); } catch (e) {
+    const banner = document.getElementById('jsErrorBanner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.textContent += (banner.textContent ? '\n' : '') + `[${label}] ${e.message}`;
+    }
+  }
+}
+
+safeRun('filters', initFilters);
+safeRun('tabs', initTabs);
+safeRun('diagrams', renderDiagrams);
+safeRun('game', initGame);
+safeRun('buildOrder', buildOrder);
+safeRun('render', render);
+if (storageBlocked) {
+  const w = document.getElementById('storageWarning');
+  if (w) w.style.display = 'block';
+}
+</script>
+</body>
+</html>
